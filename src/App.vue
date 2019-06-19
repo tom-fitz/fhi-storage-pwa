@@ -1,28 +1,37 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <v-app>
+    <v-content>
+      <!-- <Houses /> -->
+      <router-view></router-view>
+    </v-content>
+    <v-content>
+      <bottomNav></bottomNav>
+    </v-content>
+  </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import HelloWorld from './components/HelloWorld'
+import Houses from './components/Houses'
+import Furniture from './components/Furniture'
+import BottomNav from './components/BottomNav'
+import SingleHouse from './components/SingleHouse'
+import FurnitureCategoryList from './components/FurnitureCategoryList'
 
 export default {
-  name: 'app',
+  name: 'App',
   components: {
-    HelloWorld
+    HelloWorld,
+    Houses,
+    Furniture,
+    BottomNav,
+    SingleHouse,
+    FurnitureCategoryList
+  },
+  data () {
+    return {
+      //
+    }
   }
 }
 </script>
-
-<style lang="scss">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
