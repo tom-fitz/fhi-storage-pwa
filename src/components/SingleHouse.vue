@@ -139,30 +139,6 @@
                             ></v-date-picker>
                           </v-menu>
                         </v-flex>
-                        <!-- <v-flex v-if="sold" xs12>
-                          <v-menu
-                            v-model="menu2"
-                            :close-on-content-click="false"
-                            :nudge-right="40"
-                            lazy
-                            transition="scale-transition"
-                            offset-y
-                            full-width
-                            min-width="290px"
-                          >
-                            <template v-slot:activator="{ on }">
-                              <v-text-field
-                                v-model="newSoldDate"
-                                label="Date Sold"
-                                prepend-icon="event"
-                                @blur="newSoldDate = parseDate(newsoldDate)"
-                                v-on="on"
-                              ></v-text-field>
-                            </template>
-                            <v-date-picker v-model="newSoldDate" @input="menu2 = false"></v-date-picker>
-                          </v-menu>
-                        </v-flex> -->
-                        <!-- end sold date picker -->
                       </v-layout>
                     </v-container>
                   </v-card-text>
@@ -175,6 +151,24 @@
             </v-layout>
           <!-- End edit house modal -->
             <v-btn color="blue darken-1" flat @click="deleteHouse(h.id)">Delete</v-btn>
+            <!-- Start snackbar -->
+              <v-snackbar
+                v-model="snackbar"
+                :color="snackbarColor"
+                :timeout="timeout"
+              >
+                {{ snackbarText }}
+                <v-btn
+                  dark
+                  flat
+                  @click="snackbar = false"
+                >
+                  <v-icon>
+                    close
+                  </v-icon>
+                </v-btn>
+              </v-snackbar>
+            <!-- End snackbar -->
           </v-card>
         </v-flex>
       </v-layout>
@@ -202,7 +196,11 @@ export default {
       newSoldDate: new Date().toISOString().substr(0, 10),
       sold: false,
       menu1: false,
-      menu2: false
+      menu2: false,
+      snackbar: false,
+      snackbarColor: '',
+      timeout: 3000,
+      snackbarText: ''
     }
   },
   computed: {
@@ -212,12 +210,6 @@ export default {
     computedSoldDate () {
       return this.newSoldDate ? moment(this.newSoldDate).format('MM/DD/YYYY') : ''
     }
-    // computedDateFormattedMomentjs () {
-    //   return this.date ? moment(this.date).format('dddd, MMMM Do YYYY') : ''
-    // },
-    // computedDateFormattedDatefns () {
-    //   return this.date ? format(this.date, 'dddd, MMMM Do YYYY') : ''
-    // }
   },
   created () {
     // Fetch single house by house id
@@ -230,11 +222,8 @@ export default {
         })
         .then(house => {
           house.forEach(h => {
-            // let conDate = new Date(h.contractDate)
-            // h.contractDate = Date.parse(conDate)
             h.contractDate = moment(h.contractDate).format('MM/DD/YYYY')
             if(h.dateSold = '0001-01-01'){
-              //h.soldDate = moment().format('MM/DD/YYYY')
               h.dateSold = moment().format('MM/DD/YYYY')
             }
           })
@@ -277,7 +266,6 @@ export default {
     deleteHouse (houseId) {
       (async () => {
         const deleteUrl = this.url + '/' + houseId
-        console.log("delete url", deleteUrl)
         const response = await fetch(this.url + '/' + houseId, {
           method: 'DELETE'
         })
@@ -288,10 +276,14 @@ export default {
           }
         })
         .catch(err => {
+          this.snackbar = true
+          this.snackbarColor = 'danger'
+          this.snackbarText = 'House Deletion Failed'
           console.log("error in deletion", err)
         })
-        //const data = await response.json()
-        //console.log("house deleted", data)
+        this.snackbar = true
+        this.snackbarColor = 'success'
+        this.snackbarText = 'House Successfully Deleted'
         this.$router.push('/')
       })();
     },
@@ -300,8 +292,8 @@ export default {
       this.newZipInput = house.zipcode
       this.newCostInput = house.cost
       this.newSoldFlag = house.sold
-      this.newContractDate = house.contractDate //this.formatDate(house.contractDate)
-      this.newSoldDate = house.dateSold //this.formatDate(new Date().toISOString().substr(0, 10))
+      this.newContractDate = house.contractDate
+      this.newSoldDate = house.dateSold
     },
     postNewHouse(){
       (async () => {
@@ -324,26 +316,13 @@ export default {
         const data = await response.json()
 
         console.log("edited a house!", data)
+        this.snackbar = true
+        this.snackbarColor = 'success'
+        this.snackbarText = 'House Successfully Updated'
         this.dialog = false
-        this.$router.push({name: 'houses'})
+        // this.$router.push({name: 'houses'})
       })();
     }
-    // regexDate (oldDate) {
-    //   let ex = /[^A-Z]*/g
-    //   let newDate = oldDate.match(ex)
-    //   return this.formatDate(newDate[0])
-    // },
-    // formatDate (date) {
-    //   if (!date) return null
-
-    //   const [year, month, day] = date.split('/')
-    //   return `${month}/${day}/${year}`
-    // },
-    // parseDate (date) {
-    //   if (!date) return null
-    //   const [month, day, year] = date.split('/')
-    //   return this.date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-    // }
   }
 }
 </script>

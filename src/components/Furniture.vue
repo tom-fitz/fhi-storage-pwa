@@ -30,11 +30,11 @@
                   <v-flex xs12 sm6 md4>
                     <div id="uploadImage">
                       <h2>Select an image</h2>
-                      <input type="file" accept="image/jpeg" capture v-on:change="onFileChange">
+                      <input type="file" id="furnImage" accept="image/jpeg" capture v-on:change="onFileChange">
                     </div>
                     <!-- Image output -->
                         <v-card flat>
-                          <v-img v-bind:src="image" :class="[rotate]" alt="" contain id="camera--output"></v-img>
+                          <v-img :src="image" :class="[rotate]" alt="" contain id="camera--output"></v-img>
                         </v-card>
                         
                         <v-card v-if="imgPresent" flat>
@@ -91,32 +91,28 @@
                   </v-flex>
                   <v-flex xs12 lg6>
                     <v-menu
-                      ref="menu1"
                       v-model="menu1"
                       :close-on-content-click="false"
-                      :nudge-right="40"
-                      lazy
-                      transition="scale-transition"
-                      offset-y
                       full-width
-                      max-width="290px"
-                      min-width="290px"
+                      max-width="290"
                     >
                       <template v-slot:activator="{ on }">
                         <v-text-field
-                          v-model="dateFormatted"
-                          label="Date Purchased"
-                          hint="MM/DD/YYYY format"
-                          persistent-hint
-                          @blur="date = parseDate(dateFormatted)"
+                          :value="computedPurchaseDate"
+                          clearable
+                          label="Purchased Date"
+                          readonly
                           v-on="on"
                         ></v-text-field>
                       </template>
-                      <v-date-picker v-model="date" no-title @input="menu1 = false"></v-date-picker>
+                      <v-date-picker
+                        v-model="purchaseDate"
+                        @change="menu1 = false"
+                      ></v-date-picker>
                     </v-menu>
                   </v-flex>
                   <v-flex xs12>
-                    <v-text-field label="Turns" type="number" required></v-text-field>
+                    <v-text-field v-model="selectedTurns" label="Turns" type="number" required></v-text-field>
                   </v-flex>
                 </v-layout>
               </v-container>
@@ -125,7 +121,7 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue darken-1" flat @click="furnitureUIDGen()">Close</v-btn>
-              <v-btn color="blue darken-1" flat @click="dialog = false">Save</v-btn>
+              <v-btn color="blue darken-1" flat @click="postFurniture()">Save</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -146,6 +142,7 @@
 </template>
 
 <script>
+var moment = require('moment')
 export default {
   name: 'furniture',
   data () {
@@ -159,19 +156,21 @@ export default {
       selectedHouse: '',
       selectedCost: '',
       selectedPurchaser: '',
+      selectedTurns: '',
       imgPresent: false,
       imageFile: {},
       image: '',
-      date: new Date().toISOString().substr(0, 10),
-      dateFormatted: this.formatDate(new Date().toISOString().substr(0, 10)),
+      purchaseDate: new Date().toISOString().substr(0, 10),
       menu1: false,
-      rotate: 'north'
+      rotate: 'north',
+      canvas: document.createElement('canvas'),
+      ctx: this.canvas
     }
   },
   computed: {
-      computedDateFormatted () {
-        return this.formatDate(this.date)
-      }
+    computedPurchaseDate () {
+      return this.purchaseDate ? moment(this.purchaseDate).format('MM/DD/YYYY') : ''
+    }
   },
   watch: {
     date (val) {
@@ -244,7 +243,7 @@ export default {
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
       },
       onFileChange(e) {
-        var files = e.target.files || e.dataTransfer.files
+        let files = e.target.files || e.dataTransfer.files
         if (!files.length){
           return
         }
@@ -252,9 +251,9 @@ export default {
         this.imageFile = files[0]
       },
       createImage(file) {
-        var image = new Image()
-        var reader = new FileReader()
-        var vm = this
+        let image = new Image()
+        let reader = new FileReader()
+        let vm = this
 
         reader.onload = (e) => {
           //console.log("base64?", e.target.result)
@@ -262,7 +261,6 @@ export default {
             //vm.image = e.target.result
             vm.image = resetBase64image
           })
-          this.imageFile = e.target.result
         }
         reader.readAsDataURL(file)
         this.imgPresent = true
@@ -271,47 +269,35 @@ export default {
         this.image = '';
       },
       resetOrientation(srcBase64, srcOrientation, callback) {
-        var img = new Image();	
-
+        let newImg = document.createElement('img')
+        this.canvas.toBlob(function(blob) {
+            let url = URL.createObjectURL(blob)
+            newImg.onload = function() {
+              // no longer need to read the blob so it's revoked
+              URL.revokeObjectURL(url)
+            }
+            // this is the image to be sent to the API
+            // base 64 will be the displayed image for user to see.
+            newImg.src = url;
+            document.body.appendChild(newImg);
+          })
+        let img = new Image()
         img.onload = function() {
-          var width = img.width,
-              height = img.height,
-              canvas = document.createElement('canvas'),
-              ctx = canvas.getContext("2d");
-          
-          // set proper canvas dimensions before transform & export
-          if (4 < srcOrientation && srcOrientation < 9) {
-            canvas.width = height;
-            canvas.height = width;
-          } else {
-            canvas.width = width;
-            canvas.height = height;
-          }
-        
-          // transform context before drawing image
-          switch (srcOrientation) {
-            case 2: ctx.transform(-1, 0, 0, 1, width, 0); break;
-            case 3: ctx.transform(-1, 0, 0, -1, width, height ); break;
-            case 4: ctx.transform(1, 0, 0, -1, 0, height ); break;
-            case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
-            case 6: ctx.transform(0, 1, -1, 0, height , 0); break;
-            case 7: ctx.transform(0, -1, -1, 0, height , width); break;
-            case 8: ctx.transform(0, -1, 1, 0, 0, width); break;
-            default: break;
-          }
-
-          // draw image
-          ctx.drawImage(img, 0, 0)
-
-          // export base64
-          callback(canvas.toDataURL("image/jpg"))
+          let width = img.width,
+              height = img.height
+          this.canvas.width = width
+          this.canvas.height = height
+          console.log("blob", this.canvas.toBlob("image/jpg"))
         }
         //img.src = srcBase64;
-        
         this.image = srcBase64
       },
       rotateImage(){
+        // console.log("img height", this.canvas.height)
+        // console.log("img width", this.canvas.width)
         if(this.rotate === 'north'){
+          this.canvas.height = this.canvas.width
+          console.log("img height reset", this.canvas.height)
           this.rotate = 'west'
         }else if(this.rotate === 'west'){
           this.rotate = 'south'
@@ -320,6 +306,74 @@ export default {
         }else if(this.rotate === 'east'){
           this.rotate = 'north'
         }
+      },
+      postFurniture () {
+        if(this.image == null || ''){
+          return alert('picture required!')
+        }
+
+        let uid = ''
+        let charset = 'abcdefghijklmnopqrstuvwxyz0123456789'
+
+        for(var x=0;x<4;x++){
+          uid += charset.charAt(Math.floor(Math.random() * charset.length))
+        }
+
+        // Post Furniture first and pass newly created ID to the image POST.
+        (async () => {
+          const response = await fetch('https://fhistorage-api.azurewebsites.net/api/furniture', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              	"name": this.selectedName,
+                "uid": uid.toUpperCase(),
+                "categoryId": this.selectedCategory,
+                "cost": this.selectedCost,
+                "purchasedFrom": this.selectedPurchaser,
+                "datePurchased": this.purchaseDate,
+                "houseId": this.selectedHouse,
+                "turns": this.selectedTurns,
+                "furnitureImageId":null,
+                "image":null
+            })
+          });
+          const data = await response.json()
+
+          this.postImage(data.furnitureId)
+          console.log("posted a furniture", data)
+          // this.snackbar = true
+          // this.snackbarColor = 'success'
+          // this.snackbarText = 'House Successfully Updated'
+          this.dialog = false
+          // this.$router.push({name: 'houses'})
+        })();
+      },
+      postImage (furnitureId) {
+        console.log("furniture id", furnitureId)
+        console.log("file", this.imageFile)
+        let file = new File(this.imageFile)
+        console.log("new file", file)
+        let pictureFormData = new FormData()
+        console.log("formdata", pictureFormData)
+        pictureFormData.append('image', file)
+
+        (async () => {
+          const response = await fetch('https://fhistorage-api.azurewebsites.net/api/furniture/image/'+ furnitureId, {
+            method: 'POST',
+            body: formData,
+          });
+          const data = await response.json()
+
+          console.log("posted a picture!", data)
+          // this.snackbar = true
+          // this.snackbarColor = 'success'
+          // this.snackbarText = 'House Successfully Updated'
+          this.dialog = false
+          // this.$router.push({name: 'houses'})
+        })();
       }
   }
 }

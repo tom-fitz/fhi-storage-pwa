@@ -73,37 +73,6 @@
                     </v-menu>
                   </v-flex>
                   <!-- end contract date picker -->
-                  <!-- <v-flex xs12>
-                    <v-checkbox
-                      v-model="sold"
-                      label="Sold"
-                      input-value="false"
-                    ></v-checkbox>
-                  </v-flex>
-                  <v-flex v-if="sold" xs12>
-                    <v-menu
-                      ref="menu2"
-                      v-model="menu2"
-                      :close-on-content-click="false"
-                      :nudge-right="40"
-                      lazy
-                      transition="scale-transition"
-                      offset-y
-                      full-width
-                      max-width="290px"
-                      min-width="290px"
-                    >
-                      <template v-slot:activator="{ on }">
-                        <v-text-field
-                          v-model="soldDate"
-                          label="Sold Date"
-                          @blur="sDate = parseDate(soldDate)"
-                          v-on="on"
-                        ></v-text-field>
-                      </template>
-                      <v-date-picker v-model="soldDate" no-title @input="menu1 = false"></v-date-picker>
-                    </v-menu>
-                  </v-flex> -->
                 </v-layout>
               </v-container>
             </v-card-text>
