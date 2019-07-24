@@ -29,12 +29,14 @@
                   <v-flex xs12>
                     <v-text-field 
                       label="Address" 
+                      v-model="addressInput"
                       required
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs12>
                     <v-text-field
                       label="Zipcode"
+                      v-model="zipInput"
                       type="number"
                       required
                     ></v-text-field>
@@ -42,84 +44,70 @@
                   <v-flex xs12>
                     <v-text-field 
                       label="Cost"
+                      v-model="costInput"
                       type="number" 
                       hint="ex: 122.75"
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs12>
+                  <!-- contract date picker -->
+                  <v-flex xs12 lg6>
                     <v-menu
-                      ref="menu1"
                       v-model="menu1"
                       :close-on-content-click="false"
-                      :nudge-right="40"
-                      lazy
-                      transition="scale-transition"
-                      offset-y
                       full-width
-                      max-width="290px"
-                      min-width="290px"
+                      max-width="290"
                     >
                       <template v-slot:activator="{ on }">
                         <v-text-field
-                          v-model="cDate"
-                          label="Contract Start Date"
-                          @blur="cDate = parseDate(cDate)"
+                          :value="computedContractDate"
+                          clearable
+                          label="Contracted Date"
+                          readonly
                           v-on="on"
                         ></v-text-field>
                       </template>
-                      <v-date-picker v-model="cDate" no-title @input="menu1 = false"></v-date-picker>
+                      <v-date-picker
+                        v-model="contractedDate"
+                        @change="menu1 = false"
+                      ></v-date-picker>
                     </v-menu>
                   </v-flex>
-                  <v-flex xs12>
-                    <!-- <v-text-field label="Email*" required></v-text-field> -->
-                    <v-checkbox
-                      v-model="sold"
-                      label="Sold"
-                      input-value="false"
-                    ></v-checkbox>
-                  </v-flex>
-                  <v-flex v-if="sold" xs12>
-                    <v-menu
-                      ref="menu2"
-                      v-model="menu2"
-                      :close-on-content-click="false"
-                      :nudge-right="40"
-                      lazy
-                      transition="scale-transition"
-                      offset-y
-                      full-width
-                      max-width="290px"
-                      min-width="290px"
-                    >
-                      <template v-slot:activator="{ on }">
-                        <v-text-field
-                          v-model="sDate"
-                          label="Sold Date"
-                          @blur="sDate = parseDate(sDate)"
-                          v-on="on"
-                        ></v-text-field>
-                      </template>
-                      <v-date-picker v-model="sDate" no-title @input="menu1 = false"></v-date-picker>
-                    </v-menu>
-                  </v-flex>
+                  <!-- end contract date picker -->
                 </v-layout>
               </v-container>
-              <small>*indicates required field</small>
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue darken-1" flat @click="dialog = false">Close</v-btn>
-              <v-btn color="blue darken-1" flat @click="dialog = false">Save</v-btn>
+              <v-btn color="blue darken-1" flat @click="postNewHouse()">Save</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
       </v-layout>
     <!-- End add new house modal -->
+    <!-- Start new house snackbar -->
+      <v-snackbar
+        v-model="snackbar"
+        :color="snackbarColor"
+        :timeout="timeout"
+      >
+        {{ snackbarText }}
+        <v-btn
+          dark
+          flat
+          @click="snackbar = false"
+        >
+          <v-icon>
+            close
+          </v-icon>
+        </v-btn>
+      </v-snackbar>
+    <!-- End new house snackbar -->
     
     <v-container grid-list-md text-xs-center fluid>
       <v-layout row v-for="h in houses" :key="h.id">
         <v-flex>
-          <v-card light @click="getHouseById(h.id)">
+          <v-card light @click="getHouseById(h.id)" :class="contractedDays">
             <v-card-title primary-title>
               <div>{{ h.address }}</div>
             </v-card-title>
@@ -132,38 +120,93 @@
 </template>
 
 <script>
+var moment = require('moment')
 export default {
   name: 'houses',
   houses: [],
   data () {
     return {
       houses: [],
+      soldhouses: [],
+      url: 'https://fhistorage-api.azurewebsites.net/api/houses',
       dialog: false,
       sold: false,
-      cDate: new Date().toISOString().substr(0, 10),
-      sDate: new Date().toISOString().substr(0, 10),
-      contractedDate: this.formatDate(new Date().toISOString().substr(0, 10)),
-      soldDate: this.formatDate(new Date().toISOString().substr(0, 10)),
+      addressInput: '',
+      zipInput: '',
+      costInput: '',
+      contractedDate: new Date().toISOString().substr(0, 10),
       menu1: false,
-      menu2: false
+      contractedDays: '',
+      snackbar: false,
+      snackbarColor: '',
+      timeout: 3000,
+      snackbarText: ''
+    }
+  },
+  computed: {
+    computedContractDate () {
+      return this.contractedDate ? moment(this.contractedDate).format('MM/DD/YYYY') : ''
     }
   },
   created () {
     var vm = this
-    let url = 'https://fhistorage-api.azurewebsites.net/api/houses'
-    fetch(url)
+    //let url = 'https://fhistorage-api.azurewebsites.net/api/houses'
+    fetch(this.url)
       .then(response => {
         if (response.ok) {
           return response.json()
         }
       })
       .then(data => {
-        return vm.houses = data
+        // data.forEach(e => {
+        //   this.calculateContractedDays(e.contractDate)
+        // });
+        // let filtered = data.filter(function(x){
+        //   if(x.sold == false){
+        //     return vm.houses = x
+        //   }else if(x.sold == true){
+        //     return vm.soldHouses =  x
+        //   }
+        // })
+        data.forEach((e, i) => {
+          if(e.sold == true){
+            this.soldhouses = e
+            data.splice(i, 1)
+          }else if(e.sold == false){
+            this.houses = e
+          }
+        });
+        //console.log("filtered", filtered)
+        //return [this.houses, this.soldhouses]
+        return this.houses = data
       })
   },
   methods: {
     getHouseById(houseId){
       this.$router.push({name: 'singleHouse', params: { id: houseId }})
+    },
+    calculateContractedDays(cDate) {
+      cDate = moment(cDate).format('MM/DD/YYYY')
+      let now = moment().format('MM/DD/YYYY')
+      let sixtyDays = moment().subtract(60, 'days').format('MM/DD/YYYY')
+
+      let dateString = now + ' ' + cDate + ' ' + sixtyDays
+      console.log("cdate string", dateString)
+
+      if(moment(cDate) < moment(now) && moment(cDate) > moment(sixtyDays)){
+        this.contractedDays = 'contractedDaysRed'
+      }else if (moment(cDate) < moment(now) && moment(cDate) < moment(sixtyDays)){
+        this.contractedDays = 'contractedDaysGreen'
+      }
+
+      // if(moment(cDate, 'MM/DD/YYYY').isBetween(moment(now, 'MM/DD/YYYY'), moment(sixtyDays, 'MM/DD/YYYY'))){
+      //   // let something = moment(moment(cDate, 'MM/DD/YYYY').isBetween(moment(now, 'MM/DD/YYYY'), moment(sixtyDays, 'MM/DD/YYYY')))
+      //   // console.log("wiogbwie", something)
+      //   this.contractedDays = 'contractedDaysRed'
+      // }else{
+      //   this.contractedDays = 'contractedDaysGreen'
+      // }
+
     },
     formatDate (date) {
       if (!date) return null
@@ -177,6 +220,44 @@ export default {
       const [month, day, year] = date.split('/')
       return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
     },
+    postNewHouse () {
+      if(!this.sold){
+        this.sDate = '0001-01-01'
+      }
+
+      //console.log("contracted date", this.contractedDate)
+      // let newHouse = {
+      //   "address" : this.addressInput,
+      //   "zipcode" : +this.zipInput,
+      //   "costInput" : +this.costInput,
+      //   "contractDate" : this.cDate,
+      //   "dateSold" : this.sDate,
+      //   "sold" : this.sold
+      // }
+      (async () => {
+        const response = await fetch(this.url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            "address" : this.addressInput,
+            "zipcode" : +this.zipInput,
+            "cost" : +this.costInput,
+            "contractDate" : this.contractedDate,
+            "dateSold" : this.sDate,
+            "sold" : this.sold
+          })
+        });
+        const data = await response.json()
+        this.snackbar = true
+        this.snackbarColor = 'success'
+        this.snackbarText = 'House Created Successfully'
+        this.dialog = false
+        this.$router.push('/')
+      })();
+    }
   }
 }
 </script>
@@ -200,4 +281,10 @@ li {
 a {
   color: #35495E;
 } */
+.contractedDaysRed {
+  border-left: solid 4px red !important;
+}
+.contractedDaysGreen {
+  border-left: solid 4px green !important;
+}
 </style>

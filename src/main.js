@@ -8,8 +8,11 @@ import Houses from './components/Houses'
 import Furniture from './components/Furniture'
 import SingleHouse from './components/SingleHouse'
 import FurnitureCategoryList from './components/FurnitureCategoryList'
+import moment from '../node_modules/moment'
 
 Vue.config.productionTip = false
+
+Vue.prototype.moment = moment
 
 Vue.use(VueRouter)
 
