@@ -40,7 +40,6 @@
                         <v-card v-if="imgPresent" flat>
                           <v-btn id="imgRotate" v-on:click="rotateImage()">Rotate Image</v-btn>
                         </v-card>
-                        
                   </v-flex>
                   <!-- End Camera functionality -->
                   <v-flex xs12 sm6 md4>
@@ -127,6 +126,24 @@
         </v-dialog>
       </v-layout>
     <!-- End add new furniture modal -->
+      <!-- Start snackbar -->
+        <v-snackbar
+          v-model="snackbar"
+          :color="snackbarColor"
+          :timeout="timeout"
+        >
+          {{ snackbarText }}
+          <v-btn
+            dark
+            flat
+            @click="snackbar = false"
+          >
+            <v-icon>
+              close
+            </v-icon>
+          </v-btn>
+        </v-snackbar>
+      <!-- End snackbar -->
       <v-layout row v-for="(c,i) in categories" :key="i">
         <v-flex xs12>
           <v-card light @click="getFurnitureByCategoryId(c.id)">
@@ -164,7 +181,13 @@ export default {
       menu1: false,
       rotate: 'north',
       canvas: document.createElement('canvas'),
-      ctx: this.canvas
+      ctx: this.canvas,
+      formData: new FormData(),
+      url: 'http://localhost:52237/api/', //'https://fhistorage-api.azurewebsites.net/api/'
+      snackbar: false,
+      snackbarColor: '',
+      timeout: 3000,
+      snackbarText: ''
     }
   },
   computed: {
@@ -179,8 +202,7 @@ export default {
   },
   created () {
     var vm = this
-    let url = 'https://fhistorage-api.azurewebsites.net/api/'
-    fetch(url + 'categories')
+    fetch(this.url + 'categories')
       .then(response => {
         if (response.ok) {
           return response.json()
@@ -189,7 +211,7 @@ export default {
       .then(data => {
         return vm.categories = data
       })
-    fetch(url + 'houses')
+    fetch(this.url + 'houses')
       .then(response => {
         if(response.ok){
           return response.json()
@@ -215,7 +237,7 @@ export default {
       return text.toUpperCase()
     },
     getImageByImageId (imageId) {
-          let imageUrl = 'https://fhistorage-api.azurewebsites.net/api/image/' + imageId
+          let imageUrl = this.url + 'image/' + imageId
           fetch(imageUrl)
             .then(response => {
                 if(response.ok){
@@ -256,9 +278,7 @@ export default {
         let vm = this
 
         reader.onload = (e) => {
-          //console.log("base64?", e.target.result)
           this.resetOrientation(e.target.result, 5, (resetBase64image) => {
-            //vm.image = e.target.result
             vm.image = resetBase64image
           })
         }
@@ -278,8 +298,7 @@ export default {
             }
             // this is the image to be sent to the API
             // base 64 will be the displayed image for user to see.
-            newImg.src = url;
-            document.body.appendChild(newImg);
+            newImg.src = url
           })
         let img = new Image()
         img.onload = function() {
@@ -287,14 +306,10 @@ export default {
               height = img.height
           this.canvas.width = width
           this.canvas.height = height
-          console.log("blob", this.canvas.toBlob("image/jpg"))
         }
-        //img.src = srcBase64;
         this.image = srcBase64
       },
       rotateImage(){
-        // console.log("img height", this.canvas.height)
-        // console.log("img width", this.canvas.width)
         if(this.rotate === 'north'){
           this.canvas.height = this.canvas.width
           console.log("img height reset", this.canvas.height)
@@ -321,7 +336,7 @@ export default {
 
         // Post Furniture first and pass newly created ID to the image POST.
         (async () => {
-          const response = await fetch('https://fhistorage-api.azurewebsites.net/api/furniture', {
+          const response = await fetch(this.url + '/furniture', {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -336,44 +351,46 @@ export default {
                 "datePurchased": this.purchaseDate,
                 "houseId": this.selectedHouse,
                 "turns": this.selectedTurns,
-                "furnitureImageId":null,
-                "image":null
+                "furnitureImageId":null
             })
           });
           const data = await response.json()
 
           this.postImage(data.furnitureId)
-          console.log("posted a furniture", data)
-          // this.snackbar = true
-          // this.snackbarColor = 'success'
-          // this.snackbarText = 'House Successfully Updated'
+          this.snackbar = true
+          this.snackbarColor = 'success'
+          this.snackbarText = 'Furniture Successfully Posted'
           this.dialog = false
           // this.$router.push({name: 'houses'})
         })();
       },
       postImage (furnitureId) {
-        console.log("furniture id", furnitureId)
-        console.log("file", this.imageFile)
-        let file = new File(this.imageFile)
-        console.log("new file", file)
-        let pictureFormData = new FormData()
-        console.log("formdata", pictureFormData)
-        pictureFormData.append('image', file)
+        let formData = new FormData()
+        formData.append('image', this.imageFile)
+        let request = new XMLHttpRequest()
+        this.url = this.url + 'furniture/image/' + furnitureId
+        request.open('POST', this.url)
+        request.send(formData)
 
-        (async () => {
-          const response = await fetch('https://fhistorage-api.azurewebsites.net/api/furniture/image/'+ furnitureId, {
-            method: 'POST',
-            body: formData,
-          });
-          const data = await response.json()
+        console.log("response", request.response)
 
-          console.log("posted a picture!", data)
-          // this.snackbar = true
-          // this.snackbarColor = 'success'
-          // this.snackbarText = 'House Successfully Updated'
-          this.dialog = false
-          // this.$router.push({name: 'houses'})
-        })();
+        // (async () => {
+        //   const response = await fetch(this.url + 'api/furniture/image/'+ furnitureId, {
+        //     method: 'POST',
+        //     headers: {
+        //       'Content-Length': this.imageFile.size
+        //     },
+        //     body: JSON.stringify(this.imageFile)
+        //   });
+        //   const data = await response //.json()
+
+        //   console.log("posted a picture!", data)
+        //   // this.snackbar = true
+        //   // this.snackbarColor = 'success'
+        //   // this.snackbarText = 'House Successfully Updated'
+        //   this.dialog = false
+        //   // this.$router.push({name: 'houses'})
+        // })();
       }
   }
 }

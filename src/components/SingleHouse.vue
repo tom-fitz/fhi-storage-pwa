@@ -38,6 +38,9 @@
                           <strong>Cost: </strong>${{ a.cost }}<br />
                           <strong>Turns: </strong>{{ a.turns }}<br /></p>
                       </v-card-text>
+                      <v-card-actions>
+                        <v-btn flat color="orange" @click="updateFurniture(a.id)">Send Back to Warehouse</v-btn>
+                      </v-card-actions>
                   </v-card>
                   </v-expansion-panel-content>
                 </v-expansion-panel>
@@ -322,6 +325,10 @@ export default {
         this.dialog = false
         // this.$router.push({name: 'houses'})
       })();
+    },
+    updateFurniture(furnId){
+      console.log("furniture id to be updated", furnId)
+
     }
   }
 }
