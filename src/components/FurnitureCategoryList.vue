@@ -2,84 +2,84 @@
   <div class="furniture">
     <div class="headline text-xs-center pa-3">
         Furniture
-      </div>
+        <v-card-text v-model="type" class="noPadding">
+          <span class="subHeader">{{ type }}</span>
+        </v-card-text>
+    </div>
     <v-container grid-list-md text-xs-center>
           <v-card light>
-              <template>
-                <v-expansion-panel>
-                    <v-expansion-panel-content
-                    v-for="(a,i) in furniture"
-                    :key="i"
-                    >
-                    <template v-slot:header>
-                        <h3>{{ a.name }} | {{ a.uid }}</h3>
-                    </template>
-                    <v-card>
-                        <v-card-text>
-                            <v-flex v-for="(x,i) in a.furnitureImages" :key="i">
-                              <v-img
-                                :src= "x.src"
-                                contain
-                              ></v-img>
-                            </v-flex>
-                            <p><strong>Store: </strong>{{ a.purchasedFrom }}<br />
-                            <strong>Date Purchased: </strong>{{ a.datePurchased }}<br />
-                            <strong>Cost: </strong>${{ a.cost }}<br />
-                            <strong>Turns: </strong>{{ a.turns }}<br /></p>
-                        </v-card-text>
-                    </v-card>
-                    </v-expansion-panel-content>
-                </v-expansion-panel>
-              </template>
+            <template>
+              <v-expansion-panel>
+                  <v-expansion-panel-content
+                  ripple                    
+                  v-for="(a,i) in furniture"
+                  :key="i"
+                  :class="{ 'left-border-yellow': a.houseId != 1 }"
+                  >
+                  <template v-slot:header>
+                    <h3>{{ a.name }} | {{ a.uid }}</h3>
+                      
+                        <small left :class="{ 'displayHouse': a.houseId == 1 }">{{ a.house.address }}</small>
+                  </template>
+                  <v-card>
+                      <v-card-text>
+                          <v-flex v-for="(x,i) in a.furnitureImages" :key="i">
+                            <v-img
+                              :src= "x.pictureInfo"
+                              contain
+                            ></v-img>
+                          </v-flex>
+                          <p><strong>Store: </strong>{{ a.purchasedFrom }}<br />
+                          <strong>Date Purchased: </strong>{{ a.datePurchased }}<br />
+                          <strong>Cost: </strong>${{ a.cost }}<br />
+                          <strong>Turns: </strong>{{ a.turns }}<br /></p>
+                      </v-card-text>
+                  </v-card>
+                  </v-expansion-panel-content>
+              </v-expansion-panel>
+            </template>
           </v-card>
     </v-container>
+    <!-- <v-container>
+      <v-card-actions>
+        <v-btn flat color="orange" @click="getCategoryListView()">Back to categories</v-btn>
+      </v-card-actions>
+    </v-container> -->
   </div>
 </template>
 
 <script>
+var moment = require('moment')
 export default {
   name: 'furnitureCategoryList',
-  furniture: [],
   data () {
     return {
-      furniture: []
+      furniture: [],
+      type: this.$route.params.name,
+      catId: this.$route.params.id,
+      url: 'https://fhistorage-api.azurewebsites.net/api/categories/'
     }
   },
   created () {
-    let catId = this.$route.params.id
-    let url = 'https://fhistorage-api.azurewebsites.net/api/categories/' + catId + '/furniture' 
-    fetch(url)
-      .then(response => {
-        if (response.ok) {
-          return response.json()
-        }
-      })
-      .then(data => {
-        data.forEach(e => {
-            if(e.furnitureImages.length > 0){
-                this.getImageByImageId(e.furnitureImageId)
-            }
-          })
-        //console.log("furn", this.furniture);
-        return this.furniture = data
-      })
+    this.getFurnitureByCategoryId()
   },
   methods: {
-    getImageByImageId (imageId) {
-          let imageUrl = 'https://fhistorage-api.azurewebsites.net/api/image/' + imageId
-          fetch(imageUrl)
-            .then(response => {
-                if(response.ok){
-                    return response.json()
-                }
-            })
-            .then(image => {
-              this.furniture.forEach(e => {
-                if(e.furnitureImages.length > 0){
-                  e.furnitureImages.push(image)
-                }
-              })
-            })
+    getFurnitureByCategoryId(){
+      fetch(this.url + this.catId + '/furniture' )
+    .then(response => {
+      if (response.ok) {
+        return response.json()
+      }
+    })
+    .then(data => {
+      data.forEach(e => {
+          e.datePurchased = moment(e.datePurchased).format('MM/DD/YYYY')
+          if(e.houseId != 1){
+            this.leftBorder = 'left-border-yellow'
+          }
+        })
+      return this.furniture = data
+    })
     }
   }
 }
@@ -107,11 +107,23 @@ li {
 a {
   color: #35495E;
 }
+.left-border-yellow {
+  border-left: solid 4px #faca18 !important;
+}
+.displayHouse {
+  display: none;
+}
 #camera--trigger {
   z-index: 999;
   display:none;
 }
 #camera--sensor {
   object-fit: cover
+}
+.noPadding { 
+  padding: 0 !important
+}
+.subHeader {
+  font-size: 18px;
 }
 </style>

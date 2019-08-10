@@ -146,7 +146,7 @@
       <!-- End snackbar -->
       <v-layout row v-for="(c,i) in categories" :key="i">
         <v-flex xs12>
-          <v-card light @click="getFurnitureByCategoryId(c.id)">
+          <v-card light @click="getFurnitureByCategoryId(c.id, c.type)">
             <v-card-title primary-title>
               <div>{{ c.type }}</div>
             </v-card-title>
@@ -183,11 +183,12 @@ export default {
       canvas: document.createElement('canvas'),
       ctx: this.canvas,
       formData: new FormData(),
-      url: 'http://localhost:52237/api/', //'https://fhistorage-api.azurewebsites.net/api/'
+      url: 'https://fhistorage-api.azurewebsites.net/api/', //'http://localhost:52237/api/',
       snackbar: false,
       snackbarColor: '',
       timeout: 3000,
-      snackbarText: ''
+      snackbarText: '',
+      leftBorder: ''
     }
   },
   computed: {
@@ -222,8 +223,8 @@ export default {
       })
   },
   methods: {
-    getFurnitureByCategoryId (categoryId) {
-      this.$router.push({name: 'furnitureCategoryList', params: { id: categoryId }})
+    getFurnitureByCategoryId (categoryId, categoryName) {
+      this.$router.push({name: 'furnitureCategoryList', params: { id: categoryId, name: categoryName }})
     },
     furnitureUIDGen () {
       let text = ''
@@ -372,7 +373,7 @@ export default {
         request.open('POST', this.url)
         request.send(formData)
 
-        console.log("response", request.response)
+        //console.log("response", request.response())
 
         // (async () => {
         //   const response = await fetch(this.url + 'api/furniture/image/'+ furnitureId, {

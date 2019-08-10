@@ -20,7 +20,7 @@ const routes = [
   {path: '/', name: 'houses', component: Houses},
   {path: '/houses/:id', name: 'singleHouse', component: SingleHouse},
   {path: '/furniture', name: 'furniture', component: Furniture},
-  {path: '/furniture/category/:id', name: 'furnitureCategoryList', component: FurnitureCategoryList}
+  {path: '/furniture/category/:id/:name', name: 'furnitureCategoryList', component: FurnitureCategoryList}
 ]
 
 const router = new VueRouter({
