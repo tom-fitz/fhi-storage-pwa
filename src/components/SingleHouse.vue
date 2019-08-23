@@ -265,7 +265,6 @@ export default {
           this.snackbar = true
           this.snackbarColor = 'danger'
           this.snackbarText = 'House Deletion Failed'
-          console.log("error in deletion", err)
         })
         this.snackbar = true
         this.snackbarColor = 'success'
@@ -300,8 +299,6 @@ export default {
           })
         });
         const data = await response.json()
-
-        console.log("edited a house!", data)
         this.snackbar = true
         this.snackbarColor = 'success'
         this.snackbarText = 'House Successfully Updated'
@@ -341,13 +338,11 @@ export default {
           })
         });
         const data = await response
-        //await this.$nextTick()
-        console.log("sent back to warehouse!", data)
         this.snackbar = true
         this.snackbarColor = 'success'
         this.snackbarText = 'House Successfully Updated'
         this.dialog = false
-        this.$router.push(`/houses/${furn.houseId}`)
+        this.getHouseByHouseId(furn.houseId)
       })();
     }
   }

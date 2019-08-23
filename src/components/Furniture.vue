@@ -238,20 +238,20 @@ export default {
       return text.toUpperCase()
     },
     getImageByImageId (imageId) {
-          let imageUrl = this.url + 'image/' + imageId
-          fetch(imageUrl)
-            .then(response => {
-                if(response.ok){
-                    return response.json()
-                }
+        let imageUrl = this.url + 'image/' + imageId
+        fetch(imageUrl)
+          .then(response => {
+              if(response.ok){
+                  return response.json()
+              }
+          })
+          .then(image => {
+            this.furniture.forEach(e => {
+              if(e.furnitureImages.length > 0){
+                e.furnitureImages.push(image)
+              }
             })
-            .then(image => {
-              this.furniture.forEach(e => {
-                if(e.furnitureImages.length > 0){
-                  e.furnitureImages.push(image)
-                }
-              })
-            })
+          })
       },
       formatDate (date) {
         if (!date) return null
@@ -372,26 +372,6 @@ export default {
         this.url = this.url + 'furniture/image/' + furnitureId
         request.open('POST', this.url)
         request.send(formData)
-
-        //console.log("response", request.response())
-
-        // (async () => {
-        //   const response = await fetch(this.url + 'api/furniture/image/'+ furnitureId, {
-        //     method: 'POST',
-        //     headers: {
-        //       'Content-Length': this.imageFile.size
-        //     },
-        //     body: JSON.stringify(this.imageFile)
-        //   });
-        //   const data = await response //.json()
-
-        //   console.log("posted a picture!", data)
-        //   // this.snackbar = true
-        //   // this.snackbarColor = 'success'
-        //   // this.snackbarText = 'House Successfully Updated'
-        //   this.dialog = false
-        //   // this.$router.push({name: 'houses'})
-        // })();
       }
   }
 }

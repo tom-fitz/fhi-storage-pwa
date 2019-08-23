@@ -18,8 +18,7 @@
                   >
                   <template v-slot:header>
                     <h3>{{ a.name }} | {{ a.uid }}</h3>
-                      
-                        <small left :class="{ 'displayHouse': a.houseId == 1 }">{{ a.house.address }}</small>
+                    <small left :class="{ 'displayHouse': a.houseId == 1 }">{{ a.house.address }}</small>
                   </template>
                   <v-card>
                       <v-card-text>
@@ -34,122 +33,31 @@
                           <strong>Cost: </strong>${{ a.cost }}<br />
                           <strong>Turns: </strong>{{ a.turns }}<br /></p>
                       </v-card-text>
-                      <v-card-actions>
-                        <v-layout row justify-center>
-                          <v-dialog v-model="dialog" persistent max-width="600px">
-                            <template v-slot:activator="{ on }">
-                              <v-btn  v-on="on"
-                                      color="blue darken-1" 
-                                      flat
-                                      @click="editFurniture(a)">
-                                  Edit
-                              </v-btn>
-                            </template>
-                            <v-card>
-                              <v-card-title>
-                                <span class="headline">Edit Furniture</span>
-                              </v-card-title>
-                              <v-card-text>
-                                <v-container grid-list-md>
-                                  <v-layout wrap>
-                                    <!-- Camera functionality -->
-                                    <!-- <v-flex xs12 sm6 md4>
-                                      <div id="uploadImage">
-                                        <h2>Select an image</h2>
-                                        <input type="file" id="furnImage" accept="image/jpeg" capture v-on:change="onFileChange">
-                                      </div>
-                                          <v-card flat>
-                                            <v-img :src="image" :class="[rotate]" alt="" contain id="camera--output"></v-img>
-                                          </v-card>
-                                          
-                                          <v-card v-if="imgPresent" flat>
-                                            <v-btn id="imgRotate" v-on:click="rotateImage()">Rotate Image</v-btn>
-                                          </v-card>
-                                    </v-flex> -->
-                                    <!-- End Camera functionality -->
-                                    <v-flex xs12 sm6 md4>
-                                      <v-text-field 
-                                        v-model="selectedName"
-                                        label="Name" 
-                                        hint="ex: brown leather couch"
-                                        persistent-hint
-                                        required 
-                                      ></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 sm6>
-                                      <v-select
-                                        :items="categories"
-                                        v-model="selectedCategory"
-                                        item-text="type"
-                                        item-value="id"
-                                        item-id="id"
-                                        label="Select Category"
-                                        required
-                                      ></v-select>
-                                    </v-flex>
-                                    <v-flex xs12 sm6>
-                                      <v-select
-                                        :items="houses"
-                                        v-model="selectedHouse"
-                                        item-text="address"
-                                        item-value="id"
-                                        item-id="id"
-                                        label="Select House"
-                                        required
-                                      ></v-select>
-                                    </v-flex>
-                                    <v-flex xs12 sm6 md4>
-                                      <v-text-field 
-                                        v-model="selectedCost"
-                                        type="number"
-                                        label="Cost"
-                                      ></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 sm6 md4>
-                                      <v-text-field
-                                        v-model="selectedPurchaser"
-                                        label="Purchased From"
-                                        hint="ex: Bob's furniture"
-                                        persistent-hint
-                                      ></v-text-field>
-                                    </v-flex>
-                                    <v-flex xs12 lg6>
-                                      <v-menu
-                                        v-model="menu1"
-                                        :close-on-content-click="false"
-                                        full-width
-                                        max-width="290"
-                                      >
-                                        <template v-slot:activator="{ on }">
-                                          <v-text-field
-                                            :value="computedPurchaseDate"
-                                            clearable
-                                            label="Purchased Date"
-                                            readonly
-                                            v-on="on"
-                                          ></v-text-field>
-                                        </template>
-                                        <v-date-picker
-                                          v-model="purchaseDate"
-                                          @change="menu1 = false"
-                                        ></v-date-picker>
-                                      </v-menu>
-                                    </v-flex>
-                                    <v-flex xs12>
-                                      <v-text-field v-model="selectedTurns" label="Turns" type="number" required></v-text-field>
-                                    </v-flex>
-                                  </v-layout>
-                                </v-container>
-                              </v-card-text>
-                              <v-card-actions>
-                                <v-btn color="blue darken-1" flat @click="dialog = false">Close</v-btn>
-                                <v-btn color="blue darken-1" flat @click="editFurniture()">Save</v-btn>
-                              </v-card-actions>
-                            </v-card>
-                          </v-dialog>
-                        </v-layout>
-                        <v-btn color="blue darken-1" flat @click="deleteFurniture(a.furnitureId)">Delete</v-btn>
-                      </v-card-actions>
+                      <v-card-text class="leftRightPadding">
+                        <v-select
+                          :class="{ 'displayHouse': a.houseId != 1 }"
+                          :items="houses"
+                          v-model="selectedHouse"
+                          item-text="address"
+                          item-value="id"
+                          item-id="id"
+                          label="Select House"
+                          required
+                        ></v-select>
+                        <v-card-actions>
+                          <v-btn 
+                            :class="{ 'displayHouse': a.houseId != 1 }"
+                            @click="assignHouse(a)"
+                            >Assign to House</v-btn>
+                          <v-btn @click="editFurniture(a.furnitureId)">Edit Furniture</v-btn>
+                        </v-card-actions>
+                        <v-card-actions>
+                          <v-btn @click="deleteFurniture(a)"
+                                 color="red"
+                                 dark
+                          >Delete Furniture<v-icon>close</v-icon></v-btn>
+                        </v-card-actions>
+                      </v-card-text>
                   </v-card>
                   </v-expansion-panel-content>
               </v-expansion-panel>
@@ -174,17 +82,22 @@ export default {
       categories: [],
       houses: [],
       dialog: false,
-      selectedName: '',
-      selectedCategory: '',
       selectedHouse: '',
-      selectedCost: '',
-      selectedPurchaser: '',
-      selectedTurns: '',
-      purchaseDate: new Date().toISOString().substr(0, 10),
-      menu1: false,
+      // selectedName: '',
+      // selectedCategory: '',
+      // selectedHouse: '',
+      // selectedCost: '',
+      // selectedPurchaser: '',
+      // selectedTurns: '',
+      // purchaseDate: new Date().toISOString().substr(0, 10),
+      // menu1: false,
       type: this.$route.params.name,
       catId: this.$route.params.id,
-      url: 'https://fhistorage-api.azurewebsites.net/api/'
+      url: 'https://fhistorage-api.azurewebsites.net/api/',
+      snackbar: false,
+      snackbarColor: '',
+      timeout: 3000,
+      snackbarText: ''
     }
   },
   computed: {
@@ -216,50 +129,56 @@ export default {
   },
   methods: {
     getFurnitureByCategoryId(){
-      fetch(this.url + 'categories/' + this.catId + '/furniture' )
-    .then(response => {
-      if (response.ok) {
-        return response.json()
-      }
-    })
-    .then(data => {
-      data.forEach(e => {
-          e.datePurchased = moment(e.datePurchased).format('MM/DD/YYYY')
-          if(e.houseId != 1){
-            this.leftBorder = 'left-border-yellow'
-          }
-        })
-      return this.furniture = data
-    })
+        fetch(this.url + 'categories/' + this.catId + '/furniture' )
+      .then(response => {
+        if (response.ok) {
+          return response.json()
+        }
+      })
+      .then(data => {
+        data.forEach(e => {
+            e.datePurchased = moment(e.datePurchased).format('MM/DD/YYYY')
+            if(e.houseId != 1){
+              this.leftBorder = 'left-border-yellow'
+            }
+          })
+        return this.furniture = data
+      })
+    },
+    assignHouse(furniture){
+      (async () => {
+        const response = await fetch(this.url + '/furniture/'+ furniture.furnitureId, {
+          method: 'PUT',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            "categoryId" : furniture.categoryId,
+            "cost" : furniture.cost,
+            "datePurchased" : furniture.datePurchased,
+            "furnitureId" : furniture.furnitureId,
+            "furnitureImageId" : furniture.furnitureImageId,
+            "houseId" : this.selectedHouse,
+            "name" : furniture.name,
+            "purchasedFrom" : furniture.purchasedFrom,
+            "turns" : furniture.turns,
+            "uid" : furniture.uid
+          })
+        });
+        const data = await response.json()
+
+        console.log("assinged a house!", data)
+        this.snackbar = true
+        this.snackbarColor = 'success'
+        this.snackbarText = 'Furniture Successfully Assigned'
+        this.dialog = false
+        this.getFurnitureByCategoryId(furniture.categoryId)
+      })();
     },
     editFurniture(furnId){
-      //console.log("furn edit id", furnId)
-      // (async () => {
-      //   const response = await fetch('https://fhistorage-api.azurewebsites.net/api/houses/'+ this.houseId, {
-      //     method: 'PUT',
-      //     headers: {
-      //       'Accept': 'application/json',
-      //       'Content-Type': 'application/json'
-      //     },
-      //     body: JSON.stringify({
-      //       "houseId" : this.houseId,
-      //       "address" : this.newAddressInput,
-      //       "zipcode" : +this.newZipInput,
-      //       "cost" : +this.newCostInput,
-      //       "contractDate" : this.newContractDate,
-      //       "dateSold" : this.newSoldDate,
-      //       "sold" : this.sold
-      //     })
-      //   });
-      //   const data = await response.json()
-
-      //   console.log("edited a house!", data)
-      //   this.snackbar = true
-      //   this.snackbarColor = 'success'
-      //   this.snackbarText = 'House Successfully Updated'
-      //   this.dialog = false
-      //   this.getHouseByHouseId(this.houseId)
-      // })();
+      console.log("furn id", furnId)
+      this.$router.push({name: 'furnitureEdit', params: { furnitureId: furnId }})
     },
     deleteFurniture(furnId){
       console.log("furn delete id", furnId)
@@ -294,7 +213,7 @@ a {
   border-left: solid 4px #faca18 !important;
 }
 .displayHouse {
-  display: none;
+  display: none
 }
 #camera--trigger {
   z-index: 999;
@@ -302,6 +221,9 @@ a {
 }
 #camera--sensor {
   object-fit: cover
+}
+.leftRightPadding{
+  padding: 0px 16px !important
 }
 .noPadding { 
   padding: 0 !important

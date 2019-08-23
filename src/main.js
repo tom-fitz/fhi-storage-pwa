@@ -8,6 +8,7 @@ import Houses from './components/Houses'
 import Furniture from './components/Furniture'
 import SingleHouse from './components/SingleHouse'
 import FurnitureCategoryList from './components/FurnitureCategoryList'
+import FurnitureEdit from './components/FurnitureEdit'
 import moment from '../node_modules/moment'
 
 Vue.config.productionTip = false
@@ -20,7 +21,8 @@ const routes = [
   {path: '/', name: 'houses', component: Houses},
   {path: '/houses/:id', name: 'singleHouse', component: SingleHouse},
   {path: '/furniture', name: 'furniture', component: Furniture},
-  {path: '/furniture/category/:id/:name', name: 'furnitureCategoryList', component: FurnitureCategoryList}
+  {path: '/furniture/category/:id/:name', name: 'furnitureCategoryList', component: FurnitureCategoryList},
+  {path: '/furniture/:furnitureId', name: 'furnitureEdit', component: FurnitureEdit}
 ]
 
 const router = new VueRouter({
