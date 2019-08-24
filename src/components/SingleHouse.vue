@@ -29,7 +29,7 @@
                       <v-card-text>
                           <v-flex v-for="(x,i) in a.furnitureImages" :key="i">
                             <v-img
-                              :src= "x.src"
+                              :src= "x.pictureInfo"
                               contain
                             ></v-img>
                           </v-flex>
@@ -39,7 +39,7 @@
                           <strong>Turns: </strong>{{ a.turns }}<br /></p>
                       </v-card-text>
                       <v-card-actions>
-                        <v-btn flat color="orange" @click="updateFurniture(a.id)">Send Back to Warehouse</v-btn>
+                        <v-btn flat color="orange" @click="updateFurniture(a)">Send Back to Warehouse</v-btn>
                       </v-card-actions>
                   </v-card>
                   </v-expansion-panel-content>
@@ -60,7 +60,7 @@
                 </template>
                 <v-card>
                   <v-card-title>
-                    <span class="headline">User Profile</span>
+                    <span class="headline">Edit House</span>
                   </v-card-title>
                   <v-card-text>
                     <v-container grid-list-md>
@@ -214,57 +214,43 @@ export default {
       return this.newSoldDate ? moment(this.newSoldDate).format('MM/DD/YYYY') : ''
     }
   },
-  created () {
-    // Fetch single house by house id
-    let houseIdUrl = 'https://fhistorage-api.azurewebsites.net/api/houses/' + this.houseId
-      fetch(houseIdUrl)
-        .then(response => {
-          if(response.ok) {
-            return response.json()
-          }
-        })
-        .then(house => {
-          house.forEach(h => {
-            h.contractDate = moment(h.contractDate).format('MM/DD/YYYY')
-            if(h.dateSold = '0001-01-01'){
-              h.dateSold = moment().format('MM/DD/YYYY')
-            }
-          })
-          return this.singleHouse = house
-        })
-    // Fetch Furniture By House Id
-    let furnitureByHouseIdUrl = 'https://fhistorage-api.azurewebsites.net/api/houses/' + this.houseId + '/furniture'
-      fetch(furnitureByHouseIdUrl)
-        .then(response => {
-          if(response.ok) {
-            return response.json()
-          }
-        })
-        .then(furniture => {
-          furniture.forEach(e => {
-            if(e.furnitureImages.length > 0){
-                this.getImageByImageId(e.furnitureImageId)
-            }
-          })
-          return this.assocFurniture = furniture
-        })
+  created(){
+    let vm = this
+    vm.getHouseByHouseId(this.houseId)
   },
   methods: {
-    getImageByImageId (imageId) {
-        let imageUrl = 'https://fhistorage-api.azurewebsites.net/api/image/' + imageId
-        fetch(imageUrl)
-          .then(response => {
-              if(response.ok){
-                  return response.json()
-              }
-          })
-          .then(image => {
-            this.assocFurniture.forEach(e => {
-              if(e.furnitureImages.length > 0){
-                e.furnitureImages.push(image)
-              }
-            })
-          })
+    getHouseByHouseId(houseId){
+        //   // Fetch single house by house id
+      let houseIdUrl = 'https://fhistorage-api.azurewebsites.net/api/houses/' + this.houseId
+      fetch(houseIdUrl)
+      .then(response => {
+        if(response.ok) {
+          return response.json()
+        }
+      })
+      .then(house => {
+        house.forEach(h => {
+          h.contractDate = moment(h.contractDate).format('MM/DD/YYYY')
+          if(h.dateSold = '0001-01-01'){
+            h.dateSold = moment().format('MM/DD/YYYY')
+          }
+        })
+        return this.singleHouse = house
+      })
+      // Fetch Furniture By House Id
+      let furnitureByHouseIdUrl = 'https://fhistorage-api.azurewebsites.net/api/houses/' + this.houseId + '/furniture'
+      fetch(furnitureByHouseIdUrl)
+      .then(response => {
+        if(response.ok) {
+          return response.json()
+        }
+      })
+      .then(furniture => {
+        furniture.forEach(e => {
+          e.datePurchased = moment(e.datePurchased).format('MM/DD/YYYY')
+        })
+        return this.assocFurniture = furniture
+      })
     },
     deleteHouse (houseId) {
       (async () => {
@@ -273,16 +259,12 @@ export default {
           method: 'DELETE'
         })
         .then(res => {
-          console.log("response", res)
-          if(res.ok){
-            return res.json()
-          }
+
         })
         .catch(err => {
           this.snackbar = true
           this.snackbarColor = 'danger'
           this.snackbarText = 'House Deletion Failed'
-          console.log("error in deletion", err)
         })
         this.snackbar = true
         this.snackbarColor = 'success'
@@ -317,18 +299,51 @@ export default {
           })
         });
         const data = await response.json()
-
-        console.log("edited a house!", data)
         this.snackbar = true
         this.snackbarColor = 'success'
         this.snackbarText = 'House Successfully Updated'
         this.dialog = false
-        // this.$router.push({name: 'houses'})
+        this.getHouseByHouseId(this.houseId)
       })();
     },
-    updateFurniture(furnId){
-      console.log("furniture id to be updated", furnId)
-
+    updateFurniture(furn){
+      (async () => {
+        const response = await fetch('https://fhistorage-api.azurewebsites.net/api/furniture/'+ furn.furnitureId, {
+          method: 'PUT',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            "furnitureId": furn.furnitureId,
+            "name": furn.name,
+            "uid": furn.uid,
+            "categoryId": furn.categoryId,
+            "cost": furn.cost,
+            "purchasedFrom": furn.purchasedFrom,
+            "datePurchased": furn.datePurchased,
+            "houseId": 1,
+            "turns": furn.turns + 1,
+            "furnitureImages": furn.furnitureImages,
+            "furnitureImageId": furn.furnitureImageId,
+            "house": {
+                "houseId": 1,
+                "address": "TEST House",
+                "zipcode": 10101,
+                "cost": 15000.00,
+                "contractDate": "2019-07-01T00:00:00",
+                "dateSold": "2019-07-16T00:00:00",
+                "sold": false
+            }
+          })
+        });
+        const data = await response
+        this.snackbar = true
+        this.snackbarColor = 'success'
+        this.snackbarText = 'House Successfully Updated'
+        this.dialog = false
+        this.getHouseByHouseId(furn.houseId)
+      })();
     }
   }
 }

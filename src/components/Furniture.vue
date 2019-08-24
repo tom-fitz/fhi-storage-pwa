@@ -146,7 +146,7 @@
       <!-- End snackbar -->
       <v-layout row v-for="(c,i) in categories" :key="i">
         <v-flex xs12>
-          <v-card light @click="getFurnitureByCategoryId(c.id)">
+          <v-card light @click="getFurnitureByCategoryId(c.id, c.type)">
             <v-card-title primary-title>
               <div>{{ c.type }}</div>
             </v-card-title>
@@ -183,11 +183,12 @@ export default {
       canvas: document.createElement('canvas'),
       ctx: this.canvas,
       formData: new FormData(),
-      url: 'http://localhost:52237/api/', //'https://fhistorage-api.azurewebsites.net/api/'
+      url: 'https://fhistorage-api.azurewebsites.net/api/', //'http://localhost:52237/api/',
       snackbar: false,
       snackbarColor: '',
       timeout: 3000,
-      snackbarText: ''
+      snackbarText: '',
+      leftBorder: ''
     }
   },
   computed: {
@@ -222,8 +223,8 @@ export default {
       })
   },
   methods: {
-    getFurnitureByCategoryId (categoryId) {
-      this.$router.push({name: 'furnitureCategoryList', params: { id: categoryId }})
+    getFurnitureByCategoryId (categoryId, categoryName) {
+      this.$router.push({name: 'furnitureCategoryList', params: { id: categoryId, name: categoryName }})
     },
     furnitureUIDGen () {
       let text = ''
@@ -237,20 +238,20 @@ export default {
       return text.toUpperCase()
     },
     getImageByImageId (imageId) {
-          let imageUrl = this.url + 'image/' + imageId
-          fetch(imageUrl)
-            .then(response => {
-                if(response.ok){
-                    return response.json()
-                }
+        let imageUrl = this.url + 'image/' + imageId
+        fetch(imageUrl)
+          .then(response => {
+              if(response.ok){
+                  return response.json()
+              }
+          })
+          .then(image => {
+            this.furniture.forEach(e => {
+              if(e.furnitureImages.length > 0){
+                e.furnitureImages.push(image)
+              }
             })
-            .then(image => {
-              this.furniture.forEach(e => {
-                if(e.furnitureImages.length > 0){
-                  e.furnitureImages.push(image)
-                }
-              })
-            })
+          })
       },
       formatDate (date) {
         if (!date) return null
@@ -371,26 +372,6 @@ export default {
         this.url = this.url + 'furniture/image/' + furnitureId
         request.open('POST', this.url)
         request.send(formData)
-
-        console.log("response", request.response)
-
-        // (async () => {
-        //   const response = await fetch(this.url + 'api/furniture/image/'+ furnitureId, {
-        //     method: 'POST',
-        //     headers: {
-        //       'Content-Length': this.imageFile.size
-        //     },
-        //     body: JSON.stringify(this.imageFile)
-        //   });
-        //   const data = await response //.json()
-
-        //   console.log("posted a picture!", data)
-        //   // this.snackbar = true
-        //   // this.snackbarColor = 'success'
-        //   // this.snackbarText = 'House Successfully Updated'
-        //   this.dialog = false
-        //   // this.$router.push({name: 'houses'})
-        // })();
       }
   }
 }

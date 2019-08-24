@@ -149,9 +149,18 @@ export default {
     }
   },
   created () {
-    var vm = this
+    this.getHouses()
+
+    // this.$watch(this.houses, (n,o) => {
+    //   console.log("new", n)
+    //   console.log("old", o)
+    // })
     //let url = 'https://fhistorage-api.azurewebsites.net/api/houses'
-    fetch(this.url)
+    
+  },
+  methods: {
+    getHouses(){
+      fetch(this.url)
       .then(response => {
         if (response.ok) {
           return response.json()
@@ -169,19 +178,22 @@ export default {
         //   }
         // })
         data.forEach((e, i) => {
+          if(e.id == 1){
+            data.splice(e, 1)
+          }
+
           if(e.sold == true){
             this.soldhouses = e
             data.splice(i, 1)
           }else if(e.sold == false){
             this.houses = e
           }
-        });
+        })
         //console.log("filtered", filtered)
         //return [this.houses, this.soldhouses]
         return this.houses = data
       })
-  },
-  methods: {
+    },
     getHouseById(houseId){
       this.$router.push({name: 'singleHouse', params: { id: houseId }})
     },
@@ -234,6 +246,7 @@ export default {
       //   "dateSold" : this.sDate,
       //   "sold" : this.sold
       // }
+
       (async () => {
         const response = await fetch(this.url, {
           method: 'POST',
@@ -255,7 +268,7 @@ export default {
         this.snackbarColor = 'success'
         this.snackbarText = 'House Created Successfully'
         this.dialog = false
-        this.$router.push('/')
+        this.getHouses()
       })();
     }
   }
