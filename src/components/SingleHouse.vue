@@ -28,7 +28,7 @@
                   <v-card>
                       <v-card-text>
                           <v-flex v-for="(x,i) in a.furnitureImages" :key="i">
-                            <v-img
+                            <v-img 
                               :src= "x.pictureInfo"
                               contain
                             ></v-img>
@@ -181,7 +181,8 @@
 </template>
 
 <script>
-var moment = require('moment')
+let moment = require('moment')
+let orient = require('jpeg-autorotate')
 export default {
   name: 'singleHouse',
   data () {
@@ -248,6 +249,21 @@ export default {
       .then(furniture => {
         furniture.forEach(e => {
           e.datePurchased = moment(e.datePurchased).format('MM/DD/YYYY')
+          if(!e.furnitureImages){
+            e.furnitureImages.forEach(x => {
+              console.log("pictureinfo", x.pictureInfo)
+              // orient.rotate(x.pictureInfo, {quality:85}, (error, buffer, orientation, dimensions, quality) => {
+              //   if(error){
+              //     console.log("oh fuuuuck.. again : ", error.message)
+              //     return
+              //   }
+              //   console.log(`Orientation was ${orientation}`)
+              //   console.log(`Dimensions after rotation: ${dimensions.width}x${dimensions.height}`)
+              //   console.log(`Quality: ${quality}`)
+              //   console.log(`Returned Buffer: ${buffer}`)
+              // })
+            })
+          }
         })
         return this.assocFurniture = furniture
       })

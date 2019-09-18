@@ -48,14 +48,19 @@
                           <v-btn 
                             :class="{ 'displayHouse': a.houseId != 1 }"
                             @click="assignHouse(a)"
-                            >Assign to House</v-btn>
-                          <v-btn @click="editFurniture(a.furnitureId)">Edit Furniture</v-btn>
-                        </v-card-actions>
-                        <v-card-actions>
-                          <v-btn @click="deleteFurniture(a)"
+                            color="yellow"
+                            light
+                            >Assign</v-btn>
+                          <v-btn 
+                            @click="editFurniture(a.furnitureId)"
+                            color="orange"
+                            dark
+                          >Edit</v-btn>
+                          <v-btn @click="deleteFurniture(a.furnitureId)"
                                  color="red"
                                  dark
-                          >Delete Furniture<v-icon>close</v-icon></v-btn>
+                          >Delete<v-icon>close</v-icon>
+                          </v-btn>
                         </v-card-actions>
                       </v-card-text>
                   </v-card>
@@ -83,14 +88,6 @@ export default {
       houses: [],
       dialog: false,
       selectedHouse: '',
-      // selectedName: '',
-      // selectedCategory: '',
-      // selectedHouse: '',
-      // selectedCost: '',
-      // selectedPurchaser: '',
-      // selectedTurns: '',
-      // purchaseDate: new Date().toISOString().substr(0, 10),
-      // menu1: false,
       type: this.$route.params.name,
       catId: this.$route.params.id,
       url: 'https://fhistorage-api.azurewebsites.net/api/',
@@ -169,19 +166,42 @@ export default {
         const data = await response.json()
 
         console.log("assinged a house!", data)
+        this.selectedHouse = ''
         this.snackbar = true
         this.snackbarColor = 'success'
         this.snackbarText = 'Furniture Successfully Assigned'
         this.dialog = false
-        this.getFurnitureByCategoryId(furniture.categoryId)
+        this.getFurnitureByCategoryId(this.catId)
       })();
     },
     editFurniture(furnId){
-      console.log("furn id", furnId)
       this.$router.push({name: 'furnitureEdit', params: { furnitureId: furnId }})
     },
     deleteFurniture(furnId){
-      console.log("furn delete id", furnId)
+      (async () => {
+        const deleteUrl = this.url + 'furniture/' + furnId
+        // const deleteUrl = 'http://localhost:52237/api/furniture/' + furnId
+        const response = await fetch(deleteUrl, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(res => {
+          console.log("response", res)
+        })
+        .catch(err => {
+          // this.snackbar = true
+          // this.snackbarColor = 'danger'
+          // this.snackbarText = 'House Deletion Failed'
+          console.log("delete error: ", err)
+        })
+        // this.snackbar = true
+        // this.snackbarColor = 'success'
+        // this.snackbarText = 'House Successfully Deleted'
+        // this.$router.push('/')
+      })();
+      this.getFurnitureByCategoryId(this.catId)
     }
   }
 }

@@ -10,10 +10,12 @@ import SingleHouse from './components/SingleHouse'
 import FurnitureCategoryList from './components/FurnitureCategoryList'
 import FurnitureEdit from './components/FurnitureEdit'
 import moment from '../node_modules/moment'
+import orient from '../node_modules/exif-orientation-image'
 
 Vue.config.productionTip = false
 
 Vue.prototype.moment = moment
+//Vue.prototype.EXIF = EXIF
 
 Vue.use(VueRouter)
 

@@ -30,15 +30,16 @@
                   <v-flex xs12 sm6 md4>
                     <div id="uploadImage">
                       <h2>Select an image</h2>
-                      <input type="file" id="furnImage" accept="image/jpeg" capture v-on:change="onFileChange">
+                      <input type="file" id="furnImage" accept="image/jpeg" multiple v-on:change="onFileChange">
                     </div>
                     <!-- Image output -->
                         <v-card flat>
-                          <v-img :src="image" :class="[rotate]" alt="" contain id="camera--output"></v-img>
-                        </v-card>
-                        
-                        <v-card v-if="imgPresent" flat>
-                          <v-btn id="imgRotate" v-on:click="rotateImage()">Rotate Image</v-btn>
+                          <v-img 
+                                :src="image" 
+                                alt="" 
+                                contain 
+                                id="camera--output"
+                          ></v-img>
                         </v-card>
                   </v-flex>
                   <!-- End Camera functionality -->
@@ -119,7 +120,7 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" flat @click="furnitureUIDGen()">Close</v-btn>
+              <v-btn color="blue darken-1" flat @click="clearFurnitureModal()">Close</v-btn>
               <v-btn color="blue darken-1" flat @click="postFurniture()">Save</v-btn>
             </v-card-actions>
           </v-card>
@@ -159,7 +160,8 @@
 </template>
 
 <script>
-var moment = require('moment')
+let moment = require('moment')
+let getOrientedImage = require('exif-orientation-image')
 export default {
   name: 'furniture',
   data () {
@@ -179,11 +181,11 @@ export default {
       image: '',
       purchaseDate: new Date().toISOString().substr(0, 10),
       menu1: false,
-      rotate: 'north',
-      canvas: document.createElement('canvas'),
-      ctx: this.canvas,
+      canvas: document.getElementById('canvas'),
+      // ctx: this.canvas,
       formData: new FormData(),
-      url: 'https://fhistorage-api.azurewebsites.net/api/', //'http://localhost:52237/api/',
+      url: 'https://fhistorage-api.azurewebsites.net/api/',
+      // url: 'http://localhost:52237/api/', 
       snackbar: false,
       snackbarColor: '',
       timeout: 3000,
@@ -265,63 +267,123 @@ export default {
         const [month, day, year] = date.split('/')
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
       },
-      onFileChange(e) {
-        let files = e.target.files || e.dataTransfer.files
-        if (!files.length){
-          return
-        }
-        this.createImage(files[0])
-        this.imageFile = files[0]
-      },
-      createImage(file) {
-        let image = new Image()
-        let reader = new FileReader()
-        let vm = this
+      getOrientation(file, callback) {
+        var reader = new FileReader()
 
-        reader.onload = (e) => {
-          this.resetOrientation(e.target.result, 5, (resetBase64image) => {
-            vm.image = resetBase64image
-          })
+        reader.onload = function(event) {
+          var view = new DataView(event.target.result)
+
+          if (view.getUint16(0, false) != 0xFFD8) return callback(-2)
+          console.log("view: ", view.byteLength)
+          var length = view.byteLength,
+            offset = 2
+
+          while (offset < length) {
+            var marker = view.getUint16(offset, false)
+            offset += 2
+
+            if (marker == 0xFFE1) {
+              if (view.getUint32(offset += 2, false) != 0x45786966) {
+                return callback(-1)
+              }
+              var little = view.getUint16(offset += 6, false) == 0x4949
+              offset += view.getUint32(offset + 4, little)
+              var tags = view.getUint16(offset, little)
+              offset += 2
+
+              for (var i = 0; i < tags; i++)
+                if (view.getUint16(offset + (i * 12), little) == 0x0112)
+                  //console.log("callback: ", callback(view.getUint16(offset + (i * 12) + 8, little)))
+                  return callback(view.getUint16(offset + (i * 12) + 8, little))
+            } else if ((marker & 0xFF00) != 0xFF00) break
+            else offset += view.getUint16(offset, false)
+          }
+          console.log("callback: ", callback)
+          return callback(-1)
         }
-        reader.readAsDataURL(file)
-        this.imgPresent = true
-      },
-      removeImage: function (e) {
-        this.image = '';
+        this.imageFile = file
+        reader.readAsArrayBuffer(file.slice(0, 64 * 1024))
       },
       resetOrientation(srcBase64, srcOrientation, callback) {
-        let newImg = document.createElement('img')
-        this.canvas.toBlob(function(blob) {
-            let url = URL.createObjectURL(blob)
-            newImg.onload = function() {
-              // no longer need to read the blob so it's revoked
-              URL.revokeObjectURL(url)
-            }
-            // this is the image to be sent to the API
-            // base 64 will be the displayed image for user to see.
-            newImg.src = url
-          })
-        let img = new Image()
+        var img = new Image()
+
         img.onload = function() {
-          let width = img.width,
-              height = img.height
-          this.canvas.width = width
-          this.canvas.height = height
+          var width = img.width,
+            height = img.height,
+            canvas = document.createElement('canvas'),
+            ctx = canvas.getContext("2d")
+
+          // set proper canvas dimensions before transform & export
+          if ([5, 6, 7, 8].indexOf(srcOrientation) > -1) {
+            canvas.width = height
+            canvas.height = width
+          } else {
+            canvas.width = width
+            canvas.height = height
+          }
+
+          // transform context before drawing image
+          switch (srcOrientation) {
+            case 2:
+              ctx.transform(-1, 0, 0, 1, width, 0)
+              break
+            case 3:
+              ctx.transform(-1, 0, 0, -1, width, height)
+              break
+            case 4:
+              ctx.transform(1, 0, 0, -1, 0, height)
+              break
+            case 5:
+              ctx.transform(0, 1, 1, 0, 0, 0)
+              break
+            case 6:
+              ctx.transform(0, 1, -1, 0, height, 0)
+              break
+            case 7:
+              ctx.transform(0, -1, -1, 0, height, width)
+              break
+            case 8:
+              ctx.transform(0, -1, 1, 0, 0, width)
+              break
+            default:
+              ctx.transform(1, 0, 0, 1, 0, 0)
+          }
+
+          // draw image
+          ctx.drawImage(img, 0, 0)
+
+          // export base64
+          callback(canvas.toDataURL())
         }
-        this.image = srcBase64
+
+        img.src = srcBase64
       },
-      rotateImage(){
-        if(this.rotate === 'north'){
-          this.canvas.height = this.canvas.width
-          console.log("img height reset", this.canvas.height)
-          this.rotate = 'west'
-        }else if(this.rotate === 'west'){
-          this.rotate = 'south'
-        }else if(this.rotate === 'south'){
-          this.rotate = 'east'
-        }else if(this.rotate === 'east'){
-          this.rotate = 'north'
-        }
+      onFileChange(e) {
+        var vm = this
+        var file = e.target.files[0]
+        vm.imageFile = file
+        getOrientedImage(file, (error, canvas) => {
+          if(!error){
+            // vm.furniture.forEach(e => {
+            //   e.furnitureImages.forEach(x => {
+            //     // x.pictureInfo = canvas.toDataURL()
+            //   })
+            // })
+            vm.image = canvas.toDataURL()
+          }
+        })
+        var reader = new FileReader()
+        // reader.readAsDataURL(file)
+        // reader.onload = function() {
+        //   //originalImage.src = reader.result
+        //   // console.log("file", this.furnitureUIDGen())
+        //   vm.getOrientation(file, (orientation) => {
+        //   //document.getElementById("orientation").innerText = orientation
+        //     vm.resetOrientation(reader.result, orientation, function(resetBase64Image) {
+        //       vm.image = resetBase64Image
+        //     })
+        //   })
+        // } 
       },
       postFurniture () {
         if(this.image == null || ''){
@@ -372,6 +434,21 @@ export default {
         this.url = this.url + 'furniture/image/' + furnitureId
         request.open('POST', this.url)
         request.send(formData)
+      },
+      clearFurnitureModal(){
+        this.dialog = false,
+        this.selectedName = '',
+        this.selectedCategory = '',
+        this.selectedHouse = '',
+        this.selectedCost = '',
+        this.selectedPurchaser = '',
+        this.selectedTurns = '',
+        this.imgPresent = false,
+        this.imageFile = {},
+        this.image = '',
+        this.purchaseDate = new Date().toISOString().substr(0, 10),
+        this.menu1 = false,
+        this.canvas = document.createElement('canvas')
       }
   }
 }
@@ -399,26 +476,5 @@ a {
 }
 .touch {
   -webkit-overflow-scrolling: touch;
-}
-.north {
-transform:rotate(0deg);
--ms-transform:rotate(0deg); /* IE 9 */
--webkit-transform:rotate(0deg); /* Safari and Chrome */
-}
-.west {
-transform:rotate(90deg);
--ms-transform:rotate(90deg); /* IE 9 */
--webkit-transform:rotate(90deg); /* Safari and Chrome */
-}
-.south {
-transform:rotate(180deg);
--ms-transform:rotate(180deg); /* IE 9 */
--webkit-transform:rotate(180deg); /* Safari and Chrome */
-    
-}
-.east {
-transform:rotate(270deg);
--ms-transform:rotate(270deg); /* IE 9 */
--webkit-transform:rotate(270deg); /* Safari and Chrome */
 }
 </style>

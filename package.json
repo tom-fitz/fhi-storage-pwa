@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "core-js": "^2.6.5",
-    "exif-orient": "0.0.5",
+    "exif-orientation-image": "^1.0.1",
+    "jpeg-autorotate": "^5.0.1",
     "material-design-icons-iconfont": "^3.0.3",
     "moment": "^2.24.0",
     "roboto-fontface": "*",
