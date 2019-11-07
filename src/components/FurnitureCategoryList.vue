@@ -9,7 +9,8 @@
     <v-container grid-list-md text-xs-center>
           <v-card light>
             <template>
-              <v-expansion-panel>
+              <div v-if="furniture.length">
+                <v-expansion-panel>
                   <v-expansion-panel-content
                   ripple                    
                   v-for="(a,i) in furniture"
@@ -20,7 +21,8 @@
                     <h3>{{ a.name }} | {{ a.uid }}</h3>
                     <small left :class="{ 'displayHouse': a.houseId == 1 }">{{ a.house.address }}</small>
                   </template>
-                  <v-card>
+                  <template>
+                    <v-card>
                       <v-card-text>
                           <v-flex v-for="(x,i) in a.furnitureImages" :key="i">
                             <v-img
@@ -31,7 +33,8 @@
                           <p><strong>Store: </strong>{{ a.purchasedFrom }}<br />
                           <strong>Date Purchased: </strong>{{ a.datePurchased }}<br />
                           <strong>Cost: </strong>${{ a.cost }}<br />
-                          <strong>Turns: </strong>{{ a.turns }}<br /></p>
+                          <strong>Turns: </strong>{{ a.turns }}<br />
+                          <strong>Dimensions: </strong>{{ a.width }} X {{ a.height }}</p>
                       </v-card-text>
                       <v-card-text class="leftRightPadding">
                         <v-select
@@ -44,7 +47,7 @@
                           label="Select House"
                           required
                         ></v-select>
-                        <v-card-actions>
+                        <v-card-actions class="marginBottom">
                           <v-btn 
                             :class="{ 'displayHouse': a.houseId != 1 }"
                             @click="assignHouse(a)"
@@ -62,18 +65,37 @@
                           >Delete<v-icon>close</v-icon>
                           </v-btn>
                         </v-card-actions>
+                        <v-spacer></v-spacer>
                       </v-card-text>
-                  </v-card>
+                    </v-card>
+                  </template>
                   </v-expansion-panel-content>
               </v-expansion-panel>
+              </div>
+              <div v-else class="noFurniture">
+                Looks like there is no furniture in the {{ type }} yet...
+              </div>
             </template>
           </v-card>
+          <!-- Start snackbar -->
+          <v-snackbar
+            v-model="snackbar"
+            :color="snackbarColor"
+            :timeout="timeout"
+          >
+            {{ snackbarText }}
+            <v-btn
+              dark
+              flat
+              @click="snackbar = false"
+            >
+              <v-icon>
+                close
+              </v-icon>
+            </v-btn>
+          </v-snackbar>
+        <!-- End snackbar -->
     </v-container>
-    <!-- <v-container>
-      <v-card-actions>
-        <v-btn flat color="orange" @click="getCategoryListView()">Back to categories</v-btn>
-      </v-card-actions>
-    </v-container> -->
   </div>
 </template>
 
@@ -94,7 +116,9 @@ export default {
       snackbar: false,
       snackbarColor: '',
       timeout: 3000,
-      snackbarText: ''
+      snackbarText: '',
+      width: '',
+      height: ''
     }
   },
   computed: {
@@ -105,15 +129,15 @@ export default {
   created () {
     var vm = this
     vm.getFurnitureByCategoryId()
-    fetch(vm.url + 'categories')
-      .then(response => {
-        if (response.ok) {
-          return response.json()
-        }
-      })
-      .then(data => {
-        return vm.categories = data
-      })
+    // fetch(vm.url + 'categories')
+    //   .then(response => {
+    //     if (response.ok) {
+    //       return response.json()
+    //     }
+    //   })
+    //   .then(data => {
+    //     return vm.categories = data
+    //   })
     fetch(vm.url + 'houses')
       .then(response => {
         if(response.ok){
@@ -144,6 +168,7 @@ export default {
     },
     assignHouse(furniture){
       (async () => {
+        // new end point for updating sets.
         const response = await fetch(this.url + '/furniture/'+ furniture.furnitureId, {
           method: 'PUT',
           headers: {
@@ -160,12 +185,13 @@ export default {
             "name" : furniture.name,
             "purchasedFrom" : furniture.purchasedFrom,
             "turns" : furniture.turns,
-            "uid" : furniture.uid
+            "uid" : furniture.uid,
+            "width" : this.width,
+            "height" : this.height
           })
         });
         const data = await response.json()
 
-        console.log("assinged a house!", data)
         this.selectedHouse = ''
         this.snackbar = true
         this.snackbarColor = 'success'
@@ -180,28 +206,25 @@ export default {
     deleteFurniture(furnId){
       (async () => {
         const deleteUrl = this.url + 'furniture/' + furnId
-        // const deleteUrl = 'http://localhost:52237/api/furniture/' + furnId
         const response = await fetch(deleteUrl, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json'
           }
         })
-        .then(res => {
-          console.log("response", res)
-        })
+        .then(res => {})
         .catch(err => {
-          // this.snackbar = true
-          // this.snackbarColor = 'danger'
-          // this.snackbarText = 'House Deletion Failed'
           console.log("delete error: ", err)
         })
-        // this.snackbar = true
-        // this.snackbarColor = 'success'
-        // this.snackbarText = 'House Successfully Deleted'
-        // this.$router.push('/')
+        this.snackbar = true
+        this.snackbarColor = 'success'
+        this.snackbarText = 'Furniture Successfully Deleted'
+        this.getFurnitureByCategoryId(this.catId)
       })();
-      this.getFurnitureByCategoryId(this.catId)
+      
+    },
+    clearModalFields(){
+      //this.
     }
   }
 }
@@ -235,20 +258,19 @@ a {
 .displayHouse {
   display: none
 }
-#camera--trigger {
-  z-index: 999;
-  display:none;
-}
-#camera--sensor {
-  object-fit: cover
-}
 .leftRightPadding{
   padding: 0px 16px !important
+}
+.marginBottom {
+  margin-bottom: 15px
 }
 .noPadding { 
   padding: 0 !important
 }
 .subHeader {
-  font-size: 18px;
+  font-size: 18px
+}
+.noFurniture {
+  padding: 25px 50px !important
 }
 </style>

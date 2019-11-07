@@ -63,6 +63,48 @@
                       required
                     ></v-select>
                   </v-flex>
+                  <v-flex xs12 v-if="selectedCategory == '9'">
+                    <v-layout>
+                      <v-flex xs3>
+                        <v-text-field
+                          v-model="width"
+                          type="number"
+                          label="W"
+                        ></v-text-field>
+                      </v-flex>
+                      <v-flex xs3>
+                        <v-text-field
+                          v-model="height"
+                          type="number"
+                          label="H"
+                        ></v-text-field>
+                      </v-flex>
+                    </v-layout>
+                  </v-flex>
+                  <v-flex xs12>
+                    <v-layout>
+                      <v-flex xs4>
+                        Is this a set?
+                      </v-flex>
+                      <v-flex xs3>
+                        <v-checkbox
+                          v-model="isFurnitureSet"
+                        >
+                        </v-checkbox>
+                      </v-flex>
+                    </v-layout>
+                  </v-flex>
+                  <v-flex xs8 v-if="isFurnitureSet === true">
+                    <v-text-field 
+                      v-model="quantity"
+                      type="number"
+                      label="Quantity"
+                      append-outer-icon="add"
+                      prepend-icon="remove"
+                      @click:append-outer="increment"
+                      @click:prepend="decrement" 
+                    ></v-text-field>
+                  </v-flex>
                   <v-flex xs12 sm6>
                     <v-select
                       :items="houses"
@@ -116,7 +158,6 @@
                   </v-flex>
                 </v-layout>
               </v-container>
-              <small>*indicates required field</small>
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -145,14 +186,52 @@
           </v-btn>
         </v-snackbar>
       <!-- End snackbar -->
-      <v-layout row v-for="(c,i) in categories" :key="i">
+      <!-- <v-layout row v-for="(c,i) in categories" :key="i"> -->
+      <v-layout row>
         <v-flex xs12>
-          <v-card light @click="getFurnitureByCategoryId(c.id, c.type)">
+          <!-- <v-card light @click="getFurnitureByCategoryId(c.id, c.type)">
             <v-card-title primary-title>
               <div>{{ c.type }}</div>
             </v-card-title>
+          </v-card> -->
+          <v-card>
+            <v-expansion-panel>
+              <!-- start category by Room panel -->
+              <v-expansion-panel-content>
+                <template v-slot:header>
+                  <h4>Categories By Room</h4>
+                </template>
+                <v-card>
+                  <v-card-text
+                      v-for="(c,i) in categoriesByGroupOne"
+                      :key="i"
+                      class="paddingLeft"
+                      @click="getFurnitureByCategoryId(c.id, c.type)"
+                  >
+                    <h4>{{ c.type }}</h4>
+                  </v-card-text>
+                </v-card>
+              </v-expansion-panel-content>
+              <!-- End Category By Room panel -->
+              <!-- start Misc Category panel -->
+              <v-expansion-panel-content>
+                <template v-slot:header>
+                  <h4>Misc Categories</h4>
+                </template>
+                <v-card>
+                  <v-card-text
+                      v-for="(c,i) in categoriesByGroupTwo"
+                      :key="i"
+                      class="paddingLeft"
+                      @click="getFurnitureByCategoryId(c.id, c.type)"
+                  >
+                    <h4>{{ c.type }}</h4>
+                  </v-card-text>
+                </v-card>
+              </v-expansion-panel-content>
+              <!-- End Misc Categories -->
+            </v-expansion-panel>
           </v-card>
-          <v-spacer></v-spacer>
         </v-flex>
       </v-layout>
     </v-container>
@@ -182,20 +261,32 @@ export default {
       purchaseDate: new Date().toISOString().substr(0, 10),
       menu1: false,
       canvas: document.getElementById('canvas'),
-      // ctx: this.canvas,
       formData: new FormData(),
       url: 'https://fhistorage-api.azurewebsites.net/api/',
-      // url: 'http://localhost:52237/api/', 
       snackbar: false,
       snackbarColor: '',
       timeout: 3000,
       snackbarText: '',
-      leftBorder: ''
+      leftBorder: '',
+      width: null,
+      height: null,
+      isFurnitureSet: false,
+      quantity: 1
     }
   },
   computed: {
     computedPurchaseDate () {
       return this.purchaseDate ? moment(this.purchaseDate).format('MM/DD/YYYY') : ''
+    },
+    categoriesByGroupOne () {
+      return this.categories.filter((cat) => {
+        return cat.categoryGroupId == '1'
+      })
+    },
+    categoriesByGroupTwo () {
+      return this.categories.filter((cat) => {
+        return cat.categoryGroupId == '2'
+      })
     }
   },
   watch: {
@@ -267,123 +358,16 @@ export default {
         const [month, day, year] = date.split('/')
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
       },
-      getOrientation(file, callback) {
-        var reader = new FileReader()
-
-        reader.onload = function(event) {
-          var view = new DataView(event.target.result)
-
-          if (view.getUint16(0, false) != 0xFFD8) return callback(-2)
-          console.log("view: ", view.byteLength)
-          var length = view.byteLength,
-            offset = 2
-
-          while (offset < length) {
-            var marker = view.getUint16(offset, false)
-            offset += 2
-
-            if (marker == 0xFFE1) {
-              if (view.getUint32(offset += 2, false) != 0x45786966) {
-                return callback(-1)
-              }
-              var little = view.getUint16(offset += 6, false) == 0x4949
-              offset += view.getUint32(offset + 4, little)
-              var tags = view.getUint16(offset, little)
-              offset += 2
-
-              for (var i = 0; i < tags; i++)
-                if (view.getUint16(offset + (i * 12), little) == 0x0112)
-                  //console.log("callback: ", callback(view.getUint16(offset + (i * 12) + 8, little)))
-                  return callback(view.getUint16(offset + (i * 12) + 8, little))
-            } else if ((marker & 0xFF00) != 0xFF00) break
-            else offset += view.getUint16(offset, false)
-          }
-          console.log("callback: ", callback)
-          return callback(-1)
-        }
-        this.imageFile = file
-        reader.readAsArrayBuffer(file.slice(0, 64 * 1024))
-      },
-      resetOrientation(srcBase64, srcOrientation, callback) {
-        var img = new Image()
-
-        img.onload = function() {
-          var width = img.width,
-            height = img.height,
-            canvas = document.createElement('canvas'),
-            ctx = canvas.getContext("2d")
-
-          // set proper canvas dimensions before transform & export
-          if ([5, 6, 7, 8].indexOf(srcOrientation) > -1) {
-            canvas.width = height
-            canvas.height = width
-          } else {
-            canvas.width = width
-            canvas.height = height
-          }
-
-          // transform context before drawing image
-          switch (srcOrientation) {
-            case 2:
-              ctx.transform(-1, 0, 0, 1, width, 0)
-              break
-            case 3:
-              ctx.transform(-1, 0, 0, -1, width, height)
-              break
-            case 4:
-              ctx.transform(1, 0, 0, -1, 0, height)
-              break
-            case 5:
-              ctx.transform(0, 1, 1, 0, 0, 0)
-              break
-            case 6:
-              ctx.transform(0, 1, -1, 0, height, 0)
-              break
-            case 7:
-              ctx.transform(0, -1, -1, 0, height, width)
-              break
-            case 8:
-              ctx.transform(0, -1, 1, 0, 0, width)
-              break
-            default:
-              ctx.transform(1, 0, 0, 1, 0, 0)
-          }
-
-          // draw image
-          ctx.drawImage(img, 0, 0)
-
-          // export base64
-          callback(canvas.toDataURL())
-        }
-
-        img.src = srcBase64
-      },
       onFileChange(e) {
         var vm = this
         var file = e.target.files[0]
         vm.imageFile = file
         getOrientedImage(file, (error, canvas) => {
           if(!error){
-            // vm.furniture.forEach(e => {
-            //   e.furnitureImages.forEach(x => {
-            //     // x.pictureInfo = canvas.toDataURL()
-            //   })
-            // })
             vm.image = canvas.toDataURL()
           }
         })
         var reader = new FileReader()
-        // reader.readAsDataURL(file)
-        // reader.onload = function() {
-        //   //originalImage.src = reader.result
-        //   // console.log("file", this.furnitureUIDGen())
-        //   vm.getOrientation(file, (orientation) => {
-        //   //document.getElementById("orientation").innerText = orientation
-        //     vm.resetOrientation(reader.result, orientation, function(resetBase64Image) {
-        //       vm.image = resetBase64Image
-        //     })
-        //   })
-        // } 
       },
       postFurniture () {
         if(this.image == null || ''){
@@ -414,17 +398,30 @@ export default {
                 "datePurchased": this.purchaseDate,
                 "houseId": this.selectedHouse,
                 "turns": this.selectedTurns,
+                "width": this.width,
+                "height": this.height,
+                "isFurnitureSet" : this.isFurnitureSet,
+                "quantity" : this.quantity,
                 "furnitureImageId":null
             })
           });
           const data = await response.json()
-
+          // if this is a set post it to the furnitureset table to track quantity
+          if(this.isFurnitureSet == 1){this.postFurnitureSet(data)}
+          // Post the image after retreiving the newly created furniture ID
           this.postImage(data.furnitureId)
           this.snackbar = true
           this.snackbarColor = 'success'
           this.snackbarText = 'Furniture Successfully Posted'
           this.dialog = false
-          // this.$router.push({name: 'houses'})
+          this.$router.push({name: 'houses'})
+          let categoryName = ''
+          this.categories.forEach(x => {
+            if(x.id == data.categoryId){
+              categoryName = x.Type
+            }
+          })
+          this.$router.push({name: 'furnitureCategoryList', params: { id: data.categoryId, name: categoryName }})
         })();
       },
       postImage (furnitureId) {
@@ -444,11 +441,19 @@ export default {
         this.selectedPurchaser = '',
         this.selectedTurns = '',
         this.imgPresent = false,
-        this.imageFile = {},
+        this.imageFile = '',
         this.image = '',
+        this.width = '',
+        this.height = '',
         this.purchaseDate = new Date().toISOString().substr(0, 10),
         this.menu1 = false,
         this.canvas = document.createElement('canvas')
+      },
+      increment () {
+        this.quantity = parseInt(this.quantity,10) + 1
+      },
+      decrement () {
+        this.quantity = parseInt(this.quantity,10) - 1
       }
   }
 }
@@ -476,5 +481,12 @@ a {
 }
 .touch {
   -webkit-overflow-scrolling: touch;
+}
+.paddingLeft { 
+  padding-left: 35px;
+}
+.v-input--selection-controls {
+  margin: 0 !important;
+  padding: 0 !important;
 }
 </style>

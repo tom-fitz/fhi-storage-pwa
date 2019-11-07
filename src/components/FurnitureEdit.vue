@@ -13,13 +13,22 @@
                 <h2 left>Select an image</h2>
                 <input type="file" id="furnImage" accept="image/jpeg" capture v-on:change="onFileChange">                
               </v-card>
-              <v-card flat v-for="(p, i) in x.furnitureImages" :key="i">
-                <v-img :src="p.pictureInfo" alt="x.name" contain id="camera--output"></v-img>
-                <v-btn 
-                  v-if="!newPicture"
-                  flat 
-                  v-model="newPicture" 
-                  @click="editPicture(p.pictureInfo)">Edit Picture</v-btn>
+              <div v-if="!newPicture">
+                <v-card flat v-for="(p, i) in x.furnitureImages" :key="i">
+                  <v-img :src="p.pictureInfo" alt="x.name" contain id="camera--output"></v-img>
+                  <v-btn
+                    flat 
+                    v-model="newPicture" 
+                    @click="editPicture(p.pictureInfo)">Edit Picture</v-btn>
+                </v-card>
+              </div>
+              <v-card v-if="newPicture" flat>
+                <v-img 
+                      :src="image" 
+                      alt="" 
+                      contain 
+                      id="camera--output"
+                ></v-img>
               </v-card>
               <v-card v-if="furniture.furnitureImages = null">
                 <v-img :src="p.pictureInfo" alt="" contain id="camera--output"></v-img>
@@ -46,6 +55,24 @@
                 readonly
                 required
               ></v-select>
+            </v-flex>
+            <v-flex xs12 v-if="x.categoryId == '9'">
+              <v-layout>
+                <v-flex xs3>
+                  <v-text-field
+                    v-model="x.width"
+                    type="number"
+                    label="W"
+                  ></v-text-field>
+                </v-flex>
+                <v-flex xs3>
+                  <v-text-field
+                    v-model="x.height"
+                    type="number"
+                    label="H"
+                  ></v-text-field>
+                </v-flex>
+              </v-layout>
             </v-flex>
             <v-flex xs12 sm6>
               <v-select
@@ -128,7 +155,7 @@ export default {
       menu1: false,
       newPicture: false,
       canvas: document.createElement('canvas'),
-      imageFile: {},
+      imageFile: '',
       image: '',
       selectedHouse: '',
       selectedCategory: ''
@@ -194,135 +221,28 @@ export default {
         })
       })
     },
-    getOrientation(file, callback) {
-      var reader = new FileReader()
-
-      reader.onload = function(event) {
-        var view = new DataView(event.target.result)
-
-        if (view.getUint16(0, false) != 0xFFD8) return callback(-2)
-
-        var length = view.byteLength,
-          offset = 2
-
-        while (offset < length) {
-          var marker = view.getUint16(offset, false)
-          offset += 2
-
-          if (marker == 0xFFE1) {
-            if (view.getUint32(offset += 2, false) != 0x45786966) {
-              return callback(-1)
-            }
-            var little = view.getUint16(offset += 6, false) == 0x4949
-            offset += view.getUint32(offset + 4, little)
-            var tags = view.getUint16(offset, little)
-            offset += 2
-
-            for (var i = 0; i < tags; i++)
-              if (view.getUint16(offset + (i * 12), little) == 0x0112)
-                return callback(view.getUint16(offset + (i * 12) + 8, little))
-          } else if ((marker & 0xFF00) != 0xFF00) break
-          else offset += view.getUint16(offset, false)
-        }
-        return callback(-1)
-      };
-
-      reader.readAsArrayBuffer(file.slice(0, 64 * 1024))
-    },
-    resetOrientation(srcBase64, srcOrientation, callback) {
-      var img = new Image()
-
-      img.onload = function() {
-        var width = img.width,
-          height = img.height,
-          canvas = document.createElement('canvas'),
-          ctx = canvas.getContext("2d")
-
-        // set proper canvas dimensions before transform & export
-        if ([5, 6, 7, 8].indexOf(srcOrientation) > -1) {
-          canvas.width = height
-          canvas.height = width
-        } else {
-          canvas.width = width
-          canvas.height = height
-        }
-
-        // transform context before drawing image
-        switch (srcOrientation) {
-          case 2:
-            ctx.transform(-1, 0, 0, 1, width, 0)
-            break
-          case 3:
-            ctx.transform(-1, 0, 0, -1, width, height)
-            break
-          case 4:
-            ctx.transform(1, 0, 0, -1, 0, height)
-            break
-          case 5:
-            ctx.transform(0, 1, 1, 0, 0, 0)
-            break
-          case 6:
-            ctx.transform(0, 1, -1, 0, height, 0)
-            break
-          case 7:
-            ctx.transform(0, -1, -1, 0, height, width)
-            break
-          case 8:
-            ctx.transform(0, -1, 1, 0, 0, width)
-            break
-          default:
-            ctx.transform(1, 0, 0, 1, 0, 0)
-        }
-
-        // draw image
-        ctx.drawImage(img, 0, 0)
-
-        // export base64
-        callback(canvas.toDataURL())
-      }
-
-      img.src = srcBase64
-    },
-    onFileChange(e) {
+    onFileChange(e) { 
       var vm = this
       var file = e.target.files[0]
+      vm.imageFile = file
+      getOrientedImage(file, (error, canvas) => {
+        if(!error){
+          vm.image = canvas.toDataURL()
+        }
+      })
       var reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = function() {
-        // vm.getOrientation(file, (orientation) => {
-        //   vm.resetOrientation(reader.result, orientation, function(resetBase64Image) {
-        //     //vm.image = resetBase64Image
-        //     vm.furniture.forEach(e => {
-        //       e.furnitureImages.forEach(x => {
-        //         x.pictureInfo = resetBase64Image
-        //       })
-        //     })
-        //   })
-        // })
-      } 
     },
     editFurniture(furnObj){
-      let categoryName = ''
       if(this.newPicture == true){
         this.furniture.forEach(e => {
           console.log("imageFile", this.imageFile)
-          if(this.imageFile != {}){
+          if(this.imageFile != ''){
             this.updateImage(e.furnitureId)
           }
-          e.furnitureImages.forEach(x => {
-            if(x.pictureInfo.toLowerCase().indexOf("https://fhistorage-api.azurewebsites.net" === false)){
-              this.updateImage(x.furnitureId)
-            }
-          })
         })
       }
-      this.categories.forEach(c => {
-        if(c.id == this.furniture[0].categoryId){
-          categoryName = c.type
-        }
-      })
       this.editFurnitureAsync(furnObj.furnitureId)
-      this.$router.push({name: 'furnitureCategoryList', params: { id: this.furniture[0].categoryId, name: categoryName }})
+      
     },
     editFurnitureAsync(furnId){
       (async () => {
@@ -335,13 +255,19 @@ export default {
           body: JSON.stringify(this.furniture[0])
         })
         const data = await response.json()
-        console.log("returned data", data)
+        let categoryName = ''
+        this.categories.forEach(c => {
+          if(c.id == this.furniture[0].categoryId){
+            categoryName = c.type
+          }
+        })
+        this.$router.push({name: 'furnitureCategoryList', params: { id: this.furniture[0].categoryId, name: categoryName }})
       })();
     },
     updateImage(furnId){
       console.log("furn id", furnId)
       let formData = new FormData()
-      formData.append('image', this.image)
+      formData.append('image', this.imageFile)
       let request = new XMLHttpRequest()
       var imageUrl = this.url + 'furniture/image/' + furnId
       request.open('POST', imageUrl)
@@ -349,7 +275,6 @@ export default {
     },
     deleteFurniture(furnId){
       console.log("furn delete id", furnId)
-      
     }
   }
 }

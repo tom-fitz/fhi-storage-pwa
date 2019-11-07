@@ -36,7 +36,8 @@
                           <p><strong>Store: </strong>{{ a.purchasedFrom }}<br />
                           <strong>Date Purchased: </strong>{{ a.datePurchased }}<br />
                           <strong>Cost: </strong>${{ a.cost }}<br />
-                          <strong>Turns: </strong>{{ a.turns }}<br /></p>
+                          <strong>Turns: </strong>{{ a.turns }}<br />
+                          <strong>Dimensions: </strong>{{ a.width }} X {{ a.height }}</p>
                       </v-card-text>
                       <v-card-actions>
                         <v-btn flat color="orange" @click="updateFurniture(a)">Send Back to Warehouse</v-btn>
@@ -221,7 +222,7 @@ export default {
   },
   methods: {
     getHouseByHouseId(houseId){
-        //   // Fetch single house by house id
+      // Fetch single house by house id
       let houseIdUrl = 'https://fhistorage-api.azurewebsites.net/api/houses/' + this.houseId
       fetch(houseIdUrl)
       .then(response => {
@@ -249,21 +250,6 @@ export default {
       .then(furniture => {
         furniture.forEach(e => {
           e.datePurchased = moment(e.datePurchased).format('MM/DD/YYYY')
-          if(!e.furnitureImages){
-            e.furnitureImages.forEach(x => {
-              console.log("pictureinfo", x.pictureInfo)
-              // orient.rotate(x.pictureInfo, {quality:85}, (error, buffer, orientation, dimensions, quality) => {
-              //   if(error){
-              //     console.log("oh fuuuuck.. again : ", error.message)
-              //     return
-              //   }
-              //   console.log(`Orientation was ${orientation}`)
-              //   console.log(`Dimensions after rotation: ${dimensions.width}x${dimensions.height}`)
-              //   console.log(`Quality: ${quality}`)
-              //   console.log(`Returned Buffer: ${buffer}`)
-              // })
-            })
-          }
         })
         return this.assocFurniture = furniture
       })
@@ -340,17 +326,8 @@ export default {
             "datePurchased": furn.datePurchased,
             "houseId": 1,
             "turns": furn.turns + 1,
-            "furnitureImages": furn.furnitureImages,
-            "furnitureImageId": furn.furnitureImageId,
-            "house": {
-                "houseId": 1,
-                "address": "TEST House",
-                "zipcode": 10101,
-                "cost": 15000.00,
-                "contractDate": "2019-07-01T00:00:00",
-                "dateSold": "2019-07-16T00:00:00",
-                "sold": false
-            }
+            "width" : furn.width,
+            "height" : furn.height
           })
         });
         const data = await response
