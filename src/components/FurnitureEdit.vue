@@ -126,6 +126,15 @@
             <v-flex xs12>
               <v-text-field v-model="x.turns" label="Turns" type="number" readonly></v-text-field>
             </v-flex>
+            <v-flex xs8 v-if="x.isFurnitureSet == true">
+              <v-text-field 
+                v-model="quantity"
+                type="number"
+                label="Quantity"
+                append-outer-icon="add"
+                @click:append-outer="increment" 
+              ></v-text-field>
+            </v-flex>
           </v-layout>
         </v-container>
       </v-card-text>
@@ -149,7 +158,6 @@ export default {
       categories: [],
       rotate: 'north',
       url: 'https://fhistorage-api.azurewebsites.net/api/',
-      // url: 'http://localhost:52237/api/',
       furnId: this.$route.params.furnitureId,
       purchaseDate: new Date().toISOString().substr(0, 10),
       menu1: false,
@@ -158,7 +166,8 @@ export default {
       imageFile: '',
       image: '',
       selectedHouse: '',
-      selectedCategory: ''
+      selectedCategory: '',
+      quantity: 0
     }
   },
   computed: {
@@ -181,6 +190,7 @@ export default {
           }
           e.datePurchased = moment(e.datePurchased).format('YYYY-MM-DD')
           this.purchaseDate = e.datePurchased
+          this.quantity = e.quantity
         })
         return vm.furniture = data
       })
@@ -275,6 +285,18 @@ export default {
     },
     deleteFurniture(furnId){
       console.log("furn delete id", furnId)
+    },
+    increment () {
+      this.quantity = parseInt(this.quantity,10) + 1
+    },
+    decrement () {
+      if(this.quantity > 0){
+        this.quantity = parseInt(this.quantity,10) - 1
+      }
+      else
+      {
+        alert("cannot add less than zero")
+      }
     }
   }
 }

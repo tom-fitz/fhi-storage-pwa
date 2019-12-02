@@ -19,7 +19,7 @@
                   >
                   <template v-slot:header>
                     <h3>{{ a.name }} | {{ a.uid }}</h3>
-                    <small left :class="{ 'displayHouse': a.houseId == 1 }">{{ a.house.address }}</small>
+                    <small left :class="{ 'displayNone': a.houseId == 1 }">{{ a.house.address }}</small>
                   </template>
                   <template>
                     <v-card>
@@ -30,15 +30,18 @@
                               contain
                             ></v-img>
                           </v-flex>
-                          <p><strong>Store: </strong>{{ a.purchasedFrom }}<br />
-                          <strong>Date Purchased: </strong>{{ a.datePurchased }}<br />
-                          <strong>Cost: </strong>${{ a.cost }}<br />
-                          <strong>Turns: </strong>{{ a.turns }}<br />
-                          <strong>Dimensions: </strong>{{ a.width }} X {{ a.height }}</p>
+                          <p>
+                            <strong>Store: </strong>{{ a.purchasedFrom }}<br />
+                            <strong>Date Purchased: </strong>{{ a.datePurchased }}<br />
+                            <strong>Cost: </strong>${{ a.cost }}<br />
+                            <strong>Turns: </strong>{{ a.turns }}<br />
+                            <span :class="{ 'displayNone' :a.width == null || a.height == null }"><strong>Dimensions: </strong>{{ a.width }} X {{ a.height }}<br /></span>
+                            <span v-if="a.isFurnitureSet"><strong>Quantity: </strong>{{ a.quantity }}</span>
+                          </p>
                       </v-card-text>
                       <v-card-text class="leftRightPadding">
                         <v-select
-                          :class="{ 'displayHouse': a.houseId != 1 }"
+                          :class="{ 'displayNone': a.houseId != 1 }"
                           :items="houses"
                           v-model="selectedHouse"
                           item-text="address"
@@ -47,9 +50,20 @@
                           label="Select House"
                           required
                         ></v-select>
+                        <v-flex xs8 v-if="selectedHouse != '' && a.isFurnitureSet == true">
+                          <v-text-field 
+                            v-model="quantity"
+                            type="number"
+                            label="Quantity"
+                            append-outer-icon="add"
+                            prepend-icon="remove"
+                            @click:append-outer="increment"
+                            @click:prepend="decrement" 
+                          ></v-text-field>
+                        </v-flex>
                         <v-card-actions class="marginBottom">
                           <v-btn 
-                            :class="{ 'displayHouse': a.houseId != 1 }"
+                            :class="{ 'displayNone': a.houseId != 1 }"
                             @click="assignHouse(a)"
                             color="yellow"
                             light
@@ -62,6 +76,7 @@
                           <v-btn @click="deleteFurniture(a.furnitureId)"
                                  color="red"
                                  dark
+                                 :class="{'displayNone' : a.isFurnitureSet == true}"
                           >Delete<v-icon>close</v-icon>
                           </v-btn>
                         </v-card-actions>
@@ -118,7 +133,9 @@ export default {
       timeout: 3000,
       snackbarText: '',
       width: '',
-      height: ''
+      height: '',
+      quantity: 0,
+      totalStockQnty: 0
     }
   },
   computed: {
@@ -129,15 +146,6 @@ export default {
   created () {
     var vm = this
     vm.getFurnitureByCategoryId()
-    // fetch(vm.url + 'categories')
-    //   .then(response => {
-    //     if (response.ok) {
-    //       return response.json()
-    //     }
-    //   })
-    //   .then(data => {
-    //     return vm.categories = data
-    //   })
     fetch(vm.url + 'houses')
       .then(response => {
         if(response.ok){
@@ -145,7 +153,7 @@ export default {
         }
       })
       .then(data => {
-        return vm.houses = data
+        return vm.houses = data.splice(1)
       })
   },
   methods: {
@@ -162,13 +170,26 @@ export default {
             if(e.houseId != 1){
               this.leftBorder = 'left-border-yellow'
             }
+            else
+            {
+              this.totalStockQnty = e.quantity
+            }
           })
         return this.furniture = data
       })
     },
     assignHouse(furniture){
+      if(furniture.isFurnitureSet){
+        // call furniture set assign endpoint here
+        this.assignFurnitureSetToHouse(furniture)
+      }
+      else
+      {
+        this.assignSingleFurnitureToHouse(furniture)
+      }
+    },
+    assignSingleFurnitureToHouse(furniture){
       (async () => {
-        // new end point for updating sets.
         const response = await fetch(this.url + '/furniture/'+ furniture.furnitureId, {
           method: 'PUT',
           headers: {
@@ -187,7 +208,8 @@ export default {
             "turns" : furniture.turns,
             "uid" : furniture.uid,
             "width" : this.width,
-            "height" : this.height
+            "height" : this.height,
+            "quantity" : this.quantity
           })
         });
         const data = await response.json()
@@ -199,6 +221,50 @@ export default {
         this.dialog = false
         this.getFurnitureByCategoryId(this.catId)
       })();
+    },
+    assignFurnitureSetToHouse(furniture){
+      (async () => {
+        const response = await fetch(this.url + 'furnitureSets/Assignment/'+ this.selectedHouse + '/' + this.quantity, {
+          method: 'PUT',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            "furnitureId" : furniture.furnitureId,
+            "quantity" : this.quantity
+          })
+        });
+        const data = await response.json()
+
+        this.selectedHouse = ''
+        this.snackbar = true
+        this.snackbarColor = 'success'
+        this.snackbarText = 'Furniture Set Successfully Assigned'
+        this.dialog = false
+        this.getFurnitureByCategoryId(this.catId)
+      })();
+      // (async () => {
+      //   const response = await fetch(this.url + 'furnitureSets/Assignment/'+ this.selectedHouse + '/' + this.quantity , {
+      //     method: 'PUT',
+      //     headers: {
+      //       'Accept': 'application/json',
+      //       'Content-Type': 'application/json'
+      //     },
+      //     body: JSON.stringify({
+      //       "furnitureId" : furniture.furnitureId,
+      //       "quantity" : this.quantity
+      //     })
+      //   });
+      //   const data = await response.json()
+
+      //   this.selectedHouse = ''
+      //   this.snackbar = true
+      //   this.snackbarColor = 'success'
+      //   this.snackbarText = 'Furniture Set Successfully Assigned'
+      //   this.dialog = false
+      //   this.getFurnitureByCategoryId(this.catId)
+      // })();
     },
     editFurniture(furnId){
       this.$router.push({name: 'furnitureEdit', params: { furnitureId: furnId }})
@@ -225,6 +291,24 @@ export default {
     },
     clearModalFields(){
       //this.
+    },
+    increment () {
+      if(this.quantity < this.totalStockQnty){
+        this.quantity = parseInt(this.quantity,10) + 1
+      }
+      else
+      {
+        alert("Cannot add more than what is in the warehouse")
+      }
+    },
+    decrement () {
+      if(this.quantity > 0){
+        this.quantity = parseInt(this.quantity,10) - 1
+      }
+      else
+      {
+        alert("cannot add less than zero")
+      }
     }
   }
 }
@@ -255,7 +339,7 @@ a {
 .left-border-yellow {
   border-left: solid 4px #faca18 !important;
 }
-.displayHouse {
+.displayNone {
   display: none
 }
 .leftRightPadding{

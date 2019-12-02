@@ -271,7 +271,7 @@ export default {
       width: null,
       height: null,
       isFurnitureSet: false,
-      quantity: 1
+      quantity: 2
     }
   },
   computed: {
@@ -383,7 +383,7 @@ export default {
 
         // Post Furniture first and pass newly created ID to the image POST.
         (async () => {
-          const response = await fetch(this.url + '/furniture', {
+          const response = await fetch(this.url + 'furniture', {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -406,10 +406,20 @@ export default {
             })
           });
           const data = await response.json()
+
           // if this is a set post it to the furnitureset table to track quantity
-          if(this.isFurnitureSet == 1){this.postFurnitureSet(data)}
+          if(this.isFurnitureSet == 1)
+          {
+            this.postFurnitureSet(data)
+          }
+          else
+          {
+            this.quantity = 1
+          }
+          
           // Post the image after retreiving the newly created furniture ID
           this.postImage(data.furnitureId)
+
           this.snackbar = true
           this.snackbarColor = 'success'
           this.snackbarText = 'Furniture Successfully Posted'
@@ -432,6 +442,22 @@ export default {
         request.open('POST', this.url)
         request.send(formData)
       },
+      postFurnitureSet (furniture) {
+        (async () => {
+          const response = await fetch(this.url + 'furnitureSets/' + furniture.furnitureId + '/' + this.quantity, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              	"furnitureId": furniture.furnitureId,
+                "Quantity": this.quantity
+            })
+          });
+          const data = await response.json()
+        })();
+      },
       clearFurnitureModal(){
         this.dialog = false,
         this.selectedName = '',
@@ -453,7 +479,13 @@ export default {
         this.quantity = parseInt(this.quantity,10) + 1
       },
       decrement () {
-        this.quantity = parseInt(this.quantity,10) - 1
+        if(this.quantity  > 1){
+          this.quantity = parseInt(this.quantity,10) - 1
+        }
+        else
+        {
+          alert("If quantity is less than one, it is not a set.")
+        }
       }
   }
 }

@@ -33,11 +33,14 @@
                               contain
                             ></v-img>
                           </v-flex>
-                          <p><strong>Store: </strong>{{ a.purchasedFrom }}<br />
-                          <strong>Date Purchased: </strong>{{ a.datePurchased }}<br />
-                          <strong>Cost: </strong>${{ a.cost }}<br />
-                          <strong>Turns: </strong>{{ a.turns }}<br />
-                          <strong>Dimensions: </strong>{{ a.width }} X {{ a.height }}</p>
+                          <p>
+                            <strong>Store: </strong>{{ a.purchasedFrom }}<br />
+                            <strong>Date Purchased: </strong>{{ a.datePurchased }}<br />
+                            <strong>Cost: </strong>${{ a.cost }}<br />
+                            <strong>Turns: </strong>{{ a.turns }}<br />
+                            <span :class="{'displayNone' : a.width == null || a.height == null}"><strong>Dimensions: </strong>{{ a.width }} X {{ a.height }}<br /></span>
+                            <span :class="{'displayNone' : a.isFurnitureSet == false}"><strong>Quantity: </strong>{{ a.quantity }}</span>
+                          </p>
                       </v-card-text>
                       <v-card-actions>
                         <v-btn flat color="orange" @click="updateFurniture(a)">Send Back to Warehouse</v-btn>
@@ -190,7 +193,7 @@ export default {
     return {
       singleHouse: [],
       assocFurniture: [],
-      url: 'https://fhistorage-api.azurewebsites.net/api/houses',
+      url: 'https://fhistorage-api.azurewebsites.net/api/',
       houseId: this.$route.params.id,
       dialog: false,
       newAddressInput: '',
@@ -223,7 +226,7 @@ export default {
   methods: {
     getHouseByHouseId(houseId){
       // Fetch single house by house id
-      let houseIdUrl = 'https://fhistorage-api.azurewebsites.net/api/houses/' + this.houseId
+      let houseIdUrl = this.url + 'houses/' + this.houseId
       fetch(houseIdUrl)
       .then(response => {
         if(response.ok) {
@@ -240,7 +243,7 @@ export default {
         return this.singleHouse = house
       })
       // Fetch Furniture By House Id
-      let furnitureByHouseIdUrl = 'https://fhistorage-api.azurewebsites.net/api/houses/' + this.houseId + '/furniture'
+      let furnitureByHouseIdUrl = this.url + 'houses/' + this.houseId + '/furniture'
       fetch(furnitureByHouseIdUrl)
       .then(response => {
         if(response.ok) {
@@ -256,8 +259,7 @@ export default {
     },
     deleteHouse (houseId) {
       (async () => {
-        const deleteUrl = this.url + '/' + houseId
-        const response = await fetch(this.url + '/' + houseId, {
+        const response = await fetch(this.url + houseId, {
           method: 'DELETE'
         })
         .then(res => {
@@ -284,7 +286,7 @@ export default {
     },
     postNewHouse(){
       (async () => {
-        const response = await fetch('https://fhistorage-api.azurewebsites.net/api/houses/'+ this.houseId, {
+        const response = await fetch(this.url + 'houses/'+ this.houseId, {
           method: 'PUT',
           headers: {
             'Accept': 'application/json',
@@ -308,9 +310,50 @@ export default {
         this.getHouseByHouseId(this.houseId)
       })();
     },
-    updateFurniture(furn){
+    updateFurniture(f){
+      if(f.isFurnitureSet)
+      {
+        this.updateFurnitureSetByFurnitureId(f)
+      }
+      else
+      {
+        this.updateFurnitureByFurnitureId(f)
+      }
+    },
+    updateFurnitureSetByFurnitureId(furn){
       (async () => {
-        const response = await fetch('https://fhistorage-api.azurewebsites.net/api/furniture/'+ furn.furnitureId, {
+        const response = await fetch(this.url + 'furnitureSet/Warehouse', {
+          method: 'PUT',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            "furnitureId": furn.furnitureId,
+            "name": furn.name,
+            "uid": furn.uid,
+            "categoryId": furn.categoryId,
+            "cost": furn.cost,
+            "purchasedFrom": furn.purchasedFrom,
+            "datePurchased": furn.datePurchased,
+            "houseId": 1,
+            "turns": furn.turns,
+            "width" : furn.width,
+            "height" : furn.height,
+            "quantity" : furn.quantity
+          })
+        });
+        const data = await response
+        this.snackbar = true
+        this.snackbarColor = 'success'
+        this.snackbarText = 'House Successfully Updated'
+        this.dialog = false
+        this.getHouseByHouseId(furn.houseId)
+      })();
+    },
+    updateFurnitureByFurnitureId(furn){
+      (async () => {
+        const response = await fetch(this.url + 'furniture/'+ furn.furnitureId, {
           method: 'PUT',
           headers: {
             'Accept': 'application/json',
@@ -327,7 +370,8 @@ export default {
             "houseId": 1,
             "turns": furn.turns + 1,
             "width" : furn.width,
-            "height" : furn.height
+            "height" : furn.height,
+            "quantity" : furn.quantity
           })
         });
         const data = await response
@@ -345,7 +389,10 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
 p {
-    text-align: left;
+    text-align: left
+}
+.displayNone {
+  display: none
 }
 /* h1, h2 {
   font-weight: normal;

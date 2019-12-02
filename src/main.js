@@ -11,6 +11,7 @@ import FurnitureCategoryList from './components/FurnitureCategoryList'
 import FurnitureEdit from './components/FurnitureEdit'
 import moment from '../node_modules/moment'
 import orient from '../node_modules/exif-orientation-image'
+import './registerServiceWorker'
 
 Vue.config.productionTip = false
 

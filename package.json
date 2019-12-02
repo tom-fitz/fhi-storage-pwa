@@ -13,6 +13,7 @@
     "jpeg-autorotate": "^5.0.1",
     "material-design-icons-iconfont": "^3.0.3",
     "moment": "^2.24.0",
+    "register-service-worker": "^1.6.2",
     "roboto-fontface": "*",
     "vue": "^2.6.10",
     "vue-router": "^3.0.6",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.8.0",
     "@vue/cli-plugin-eslint": "^3.8.0",
+    "@vue/cli-plugin-pwa": "^4.0.5",
     "@vue/cli-service": "^3.8.0",
     "babel-eslint": "^10.0.1",
     "eslint": "^5.16.0",
