@@ -107,7 +107,7 @@
     <v-container grid-list-md text-xs-center fluid>
       <v-layout row v-for="h in houses" :key="h.id">
         <v-flex>
-          <v-card light @click="getHouseById(h.id)" :class="contractedDays">
+          <v-card light @click="getHouseById(h.id)" :class="{ 'displayNone': h.sold == 1 }">
             <v-card-title primary-title>
               <div>{{ h.address }}</div>
             </v-card-title>
@@ -181,16 +181,7 @@ export default {
           if(e.id == 1){
             data.splice(e, 1)
           }
-
-          if(e.sold == true){
-            this.soldhouses = e
-            data.splice(i, 1)
-          }else if(e.sold == false){
-            this.houses = e
-          }
         })
-        //console.log("filtered", filtered)
-        //return [this.houses, this.soldhouses]
         return this.houses = data
       })
     },
@@ -299,5 +290,8 @@ a {
 }
 .contractedDaysGreen {
   border-left: solid 4px green !important;
+}
+.displayNone {
+  display: none
 }
 </style>

@@ -36,7 +36,8 @@
                             <strong>Cost: </strong>${{ a.cost }}<br />
                             <strong>Turns: </strong>{{ a.turns }}<br />
                             <span :class="{ 'displayNone' :a.width == null || a.height == null }"><strong>Dimensions: </strong>{{ a.width }} X {{ a.height }}<br /></span>
-                            <span v-if="a.isFurnitureSet"><strong>Quantity: </strong>{{ a.quantity }}</span>
+                            <span v-if="a.isFurnitureSet"><strong>Quantity: </strong>{{ a.quantity }}</span><br />
+                            <strong>Notes: </strong>{{ a.notes }}
                           </p>
                       </v-card-text>
                       <v-card-text class="leftRightPadding">

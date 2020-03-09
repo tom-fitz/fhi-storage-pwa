@@ -17,6 +17,8 @@ import Furniture from './components/Furniture'
 import BottomNav from './components/BottomNav'
 import SingleHouse from './components/SingleHouse'
 import FurnitureCategoryList from './components/FurnitureCategoryList'
+import HouseEdit from './components/HouseEdit'
+import FurnitureEdit from './components/FurnitureEdit'
 
 export default {
   name: 'App',
@@ -26,7 +28,9 @@ export default {
     Furniture,
     BottomNav,
     SingleHouse,
-    FurnitureCategoryList
+    FurnitureCategoryList,
+    HouseEdit,
+    FurnitureEdit
   },
   data () {
     return {

@@ -156,6 +156,14 @@
                   <v-flex xs12>
                     <v-text-field v-model="selectedTurns" label="Turns" type="number" required></v-text-field>
                   </v-flex>
+                  </v-flex>
+                    <v-textarea
+                      outlined
+                      label="Notes"
+                      name="input-7-4"
+                      v-model="selectedNotes"
+                    ></v-textarea>
+                  </v-flex>
                 </v-layout>
               </v-container>
             </v-card-text>
@@ -255,6 +263,7 @@ export default {
       selectedCost: '',
       selectedPurchaser: '',
       selectedTurns: '',
+      selectedNotes: '',
       imgPresent: false,
       imageFile: {},
       image: '',
@@ -263,6 +272,7 @@ export default {
       canvas: document.getElementById('canvas'),
       formData: new FormData(),
       url: 'https://fhistorage-api.azurewebsites.net/api/',
+      // url: 'http://localhost:52237/api/',
       snackbar: false,
       snackbarColor: '',
       timeout: 3000,
@@ -402,20 +412,13 @@ export default {
                 "height": this.height,
                 "isFurnitureSet" : this.isFurnitureSet,
                 "quantity" : this.quantity,
+                "notes" : this.selectedNotes,
                 "furnitureImageId":null
             })
           });
           const data = await response.json()
 
           // if this is a set post it to the furnitureset table to track quantity
-          if(this.isFurnitureSet == 1)
-          {
-            this.postFurnitureSet(data)
-          }
-          else
-          {
-            this.quantity = 1
-          }
           
           // Post the image after retreiving the newly created furniture ID
           this.postImage(data.furnitureId)
@@ -443,20 +446,24 @@ export default {
         request.send(formData)
       },
       postFurnitureSet (furniture) {
-        (async () => {
-          const response = await fetch(this.url + 'furnitureSets/' + furniture.furnitureId + '/' + this.quantity, {
-            method: 'POST',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              	"furnitureId": furniture.furnitureId,
-                "Quantity": this.quantity
-            })
-          });
-          const data = await response.json()
-        })();
+        // (async () => {
+        //   const response = await fetch(this.url + 'furnitureSets/' + furniture.furnitureId + '/' + this.quantity, {
+        //     method: 'POST',
+        //     body: JSON.stringify({
+        //       	"furnitureId": furniture.furnitureId,
+        //         "Quantity": this.quantity
+        //     })
+        //   });
+        //   const data = await response.json()
+        // })();
+        // fetch(this.url + 'furnitureSets/' + furniture.furnitureId + '/' + this.quantity,{
+        //   method: 'post',
+        //   body: JSON.stringify(furniture)
+        // }).then(function(response){
+        //   return response.json()
+        // }).then(function(data){
+        //   console.log("data", data)
+        // })
       },
       clearFurnitureModal(){
         this.dialog = false,

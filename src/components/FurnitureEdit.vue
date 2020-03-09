@@ -135,6 +135,14 @@
                 @click:append-outer="increment" 
               ></v-text-field>
             </v-flex>
+            <v-flex xs12>
+              <v-textarea
+                outlined
+                name="Notes"
+                label="Notes"
+                v-model="x.notes"
+              ></v-textarea>
+            </v-flex>
           </v-layout>
         </v-container>
       </v-card-text>
@@ -296,6 +304,7 @@ export default {
       else
       {
         alert("cannot add less than zero")
+        return
       }
     }
   }

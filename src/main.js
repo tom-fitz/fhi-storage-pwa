@@ -9,6 +9,7 @@ import Furniture from './components/Furniture'
 import SingleHouse from './components/SingleHouse'
 import FurnitureCategoryList from './components/FurnitureCategoryList'
 import FurnitureEdit from './components/FurnitureEdit'
+import HouseEdit from './components/HouseEdit'
 import moment from '../node_modules/moment'
 import orient from '../node_modules/exif-orientation-image'
 import './registerServiceWorker'
@@ -25,7 +26,8 @@ const routes = [
   {path: '/houses/:id', name: 'singleHouse', component: SingleHouse},
   {path: '/furniture', name: 'furniture', component: Furniture},
   {path: '/furniture/category/:id/:name', name: 'furnitureCategoryList', component: FurnitureCategoryList},
-  {path: '/furniture/:furnitureId', name: 'furnitureEdit', component: FurnitureEdit}
+  {path: '/furniture/:furnitureId', name: 'furnitureEdit', component: FurnitureEdit},
+  {path: '/house/edit/:id', name: 'houseEdit', component: HouseEdit}
 ]
 
 const router = new VueRouter({

@@ -38,6 +38,7 @@
                             <strong>Date Purchased: </strong>{{ a.datePurchased }}<br />
                             <strong>Cost: </strong>${{ a.cost }}<br />
                             <strong>Turns: </strong>{{ a.turns }}<br />
+                            <strong>Notes: </strong>{{ a.notes }}<br />
                             <span :class="{'displayNone' : a.width == null || a.height == null}"><strong>Dimensions: </strong>{{ a.width }} X {{ a.height }}<br /></span>
                             <span :class="{'displayNone' : a.isFurnitureSet == false}"><strong>Quantity: </strong>{{ a.quantity }}</span>
                           </p>
@@ -53,111 +54,15 @@
           <v-card>
             <!-- Modal for editing a new house -->
             <v-layout row justify-center>
-              <v-dialog v-model="dialog" persistent max-width="600px">
-                <template v-slot:activator="{ on }">
-                  <v-btn  v-on="on"
-                          color="blue darken-1" 
-                          flat
-                          @click="editHouse(h)">
-                      Edit
-                  </v-btn>
-                </template>
-                <v-card>
-                  <v-card-title>
-                    <span class="headline">Edit House</span>
-                  </v-card-title>
-                  <v-card-text>
-                    <v-container grid-list-md>
-                      <v-layout wrap>
-                        <v-flex xs12>
-                          <v-text-field 
-                            label="Address" 
-                            v-model="newAddressInput"
-                            required
-                          ></v-text-field>
-                        </v-flex>
-                        <v-flex xs12>
-                          <v-text-field
-                            label="Zipcode"
-                            v-model="newZipInput"
-                            type="number"
-                            required
-                          ></v-text-field>
-                        </v-flex>
-                        <v-flex xs12>
-                          <v-text-field 
-                            label="Cost"
-                            v-model="newCostInput"
-                            type="number" 
-                            hint="ex: 122.75"
-                          ></v-text-field>
-                        </v-flex>
-                        <!-- contracted date picker -->
-                        <v-flex xs12 lg6>
-                          <v-menu
-                            v-model="menu1"
-                            :close-on-content-click="false"
-                            full-width
-                            max-width="290"
-                          >
-                            <template v-slot:activator="{ on }">
-                              <v-text-field
-                                :value="computedContractDate"
-                                clearable
-                                label="Contract Date"
-                                readonly
-                                v-on="on"
-                              ></v-text-field>
-                            </template>
-                            <v-date-picker
-                              v-model="newContractDate"
-                              @change="menu1 = false"
-                            ></v-date-picker>
-                          </v-menu>
-                        </v-flex>
-                        <!-- end contracted date picker -->
-                        <v-flex xs12>
-                          <v-checkbox
-                            v-model="sold"
-                            label="Sold"
-                            input-value="false"
-                          ></v-checkbox>
-                        </v-flex>
-                        <!-- sold date picker -->
-                        <v-flex v-if="sold" xs12 lg6>
-                          <v-menu
-                            v-model="menu2"
-                            :close-on-content-click="false"
-                            full-width
-                            max-width="290"
-                          >
-                            <template v-slot:activator="{ on }">
-                              <v-text-field
-                                :value="computedSoldDate"
-                                clearable
-                                label="Sold Date"
-                                readonly
-                                v-on="on"
-                              ></v-text-field>
-                            </template>
-                            <v-date-picker
-                              v-model="newSoldDate"
-                              @change="menu2 = false"
-                            ></v-date-picker>
-                          </v-menu>
-                        </v-flex>
-                      </v-layout>
-                    </v-container>
-                  </v-card-text>
-                  <v-card-actions>
-                    <v-btn color="blue darken-1" flat @click="dialog = false">Close</v-btn>
-                    <v-btn color="blue darken-1" flat @click="postNewHouse()">Save</v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
+              <v-btn 
+              class="btn-style"
+              x-large
+              @click="editHouse(h.id)"
+              color="orange"
+              dark
+              >Edit</v-btn>
             </v-layout>
           <!-- End edit house modal -->
-            <v-btn color="blue darken-1" flat @click="deleteHouse(h.id)">Delete</v-btn>
             <!-- Start snackbar -->
               <v-snackbar
                 v-model="snackbar"
@@ -196,12 +101,8 @@ export default {
       url: 'https://fhistorage-api.azurewebsites.net/api/',
       houseId: this.$route.params.id,
       dialog: false,
-      newAddressInput: '',
-      newZipInput: '',
-      newCostInput: '',
-      newSoldFlag: false,
-      newContractDate: new Date().toISOString().substr(0, 10),
       newSoldDate: new Date().toISOString().substr(0, 10),
+      // newSoldDate: '',
       sold: false,
       menu1: false,
       menu2: false,
@@ -237,7 +138,7 @@ export default {
         house.forEach(h => {
           h.contractDate = moment(h.contractDate).format('MM/DD/YYYY')
           if(h.dateSold = '0001-01-01'){
-            h.dateSold = moment().format('MM/DD/YYYY')
+            h.dateSold = ''
           }
         })
         return this.singleHouse = house
@@ -276,13 +177,8 @@ export default {
         this.$router.push('/')
       })();
     },
-    editHouse (house) {
-      this.newAddressInput = house.address
-      this.newZipInput = house.zipcode
-      this.newCostInput = house.cost
-      this.newSoldFlag = house.sold
-      this.newContractDate = house.contractDate
-      this.newSoldDate = house.dateSold
+    editHouse (houseId) {
+      this.$router.push({name: 'houseEdit', params: { houseId: houseId }})
     },
     postNewHouse(){
       (async () => {
@@ -298,7 +194,7 @@ export default {
             "zipcode" : +this.newZipInput,
             "cost" : +this.newCostInput,
             "contractDate" : this.newContractDate,
-            "dateSold" : this.newSoldDate,
+            "dateSold" : this.dateSold,
             "sold" : this.sold
           })
         });
@@ -393,6 +289,10 @@ p {
 }
 .displayNone {
   display: none
+}
+.btn-style {
+  width:80%;
+  margin: 15px 0px;
 }
 /* h1, h2 {
   font-weight: normal;
