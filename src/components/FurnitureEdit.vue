@@ -291,7 +291,7 @@ export default {
       request.send(formData)
     },
     deleteFurniture(furnId){
-      console.log("furn delete id.", furnId)
+      console.log("furn delete id....", furnId)
     },
     increment () {
       this.quantity = parseInt(this.quantity,10) + 1
