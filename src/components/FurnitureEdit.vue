@@ -283,7 +283,6 @@ export default {
       })();
     },
     updateImage(furnId){
-      console.log("furn id", furnId)
       let formData = new FormData()
       formData.append('image', this.imageFile)
       let request = new XMLHttpRequest()
