@@ -11,13 +11,11 @@ import FurnitureCategoryList from './components/FurnitureCategoryList'
 import FurnitureEdit from './components/FurnitureEdit'
 import HouseEdit from './components/HouseEdit'
 import moment from '../node_modules/moment'
-import orient from '../node_modules/exif-orientation-image'
 import './registerServiceWorker'
 
 Vue.config.productionTip = false
 
 Vue.prototype.moment = moment
-//Vue.prototype.EXIF = EXIF
 
 Vue.use(VueRouter)
 
