@@ -26,6 +26,8 @@ workbox.setConfig({
       ],
     }),
   )
+
+console.log("precaching")
   
   workbox.routing.registerRoute(
     new RegExp('https://fhistorage-api.azurewebsites.net'),
