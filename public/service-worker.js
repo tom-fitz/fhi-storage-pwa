@@ -9,23 +9,35 @@
 // }
 
 workbox.setConfig({
-    debug: false,
-  })
-  
-  workbox.precaching.precacheAndRoute([])
-  
-  workbox.routing.registerRoute(
-    /\.(?:png|gif|jpg|jpeg|svg)$/,
-    workbox.strategies.staleWhileRevalidate({
-      cacheName: 'images',
-      plugins: [
-        new workbox.expiration.Plugin({
-          maxEntries: 60,
-          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
-        }),
-      ],
-    }),
-  )
+  debug: false,
+})
+
+// Lets start by caching all .js files
+workbox.routing.networkFirst(
+  /\.js$/,
+  new networkFirst()
+)
+
+// then go ahead and cache any .vue files
+workbox.routing.networkFirst(
+  /\.vue$/,
+  new networkFirst()
+)
+
+workbox.precaching.precacheAndRoute([])
+
+workbox.routing.registerRoute(
+  /\.(?:png|gif|jpg|jpeg|svg)$/,
+  workbox.strategies.staleWhileRevalidate({
+    cacheName: 'images',
+    plugins: [
+      new workbox.expiration.Plugin({
+        maxEntries: 60,
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+      }),
+    ],
+  }),
+)
 
 console.log("precaching")
   
