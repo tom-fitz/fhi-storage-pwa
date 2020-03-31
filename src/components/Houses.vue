@@ -15,7 +15,8 @@
                     fixed
                     top
                     right
-                    fab>
+                    fab
+                    data-cy="add-house-btn">
               <v-icon light>add</v-icon>
             </v-btn>
           </template>
@@ -31,6 +32,7 @@
                       label="Address" 
                       v-model="addressInput"
                       required
+                      data-cy="house-address"
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs12>
@@ -39,6 +41,7 @@
                       v-model="zipInput"
                       type="number"
                       required
+                      data-cy="house-zipcode"
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs12>
@@ -47,6 +50,7 @@
                       v-model="costInput"
                       type="number" 
                       hint="ex: 122.75"
+                      data-cy="house-cost"
                     ></v-text-field>
                   </v-flex>
                   <!-- contract date picker -->
@@ -56,6 +60,7 @@
                       :close-on-content-click="false"
                       full-width
                       max-width="290"
+                      data-cy="house-contract-date"
                     >
                       <template v-slot:activator="{ on }">
                         <v-text-field
