@@ -17,10 +17,17 @@
           <!-- Assoc. Furntiure card -->
           <v-card light>
               <template>
+                <div v-if="loader">
+                  <v-progress-circular
+                    indeterminate
+                    color="#71eeb8"
+                  ></v-progress-circular>
+                </div>
                 <v-expansion-panel>
                   <v-expansion-panel-content
                   v-for="(a,i) in assocFurniture"
                   :key="i"
+                  multiple
                   >
                   <template v-slot:header>
                       <h3>{{ a.name }} | {{ a.uid }}</h3>
@@ -109,7 +116,8 @@ export default {
       snackbar: false,
       snackbarColor: '',
       timeout: 3000,
-      snackbarText: ''
+      snackbarText: '',
+      loader: true
     }
   },
   computed: {
@@ -155,6 +163,7 @@ export default {
         furniture.forEach(e => {
           e.datePurchased = moment(e.datePurchased).format('MM/DD/YYYY')
         })
+        this.loader = false
         return this.assocFurniture = furniture
       })
     },

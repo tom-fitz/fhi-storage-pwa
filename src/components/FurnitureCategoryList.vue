@@ -12,7 +12,7 @@
               <div v-if="furniture.length">
                 <v-expansion-panel>
                   <v-expansion-panel-content
-                  ripple                    
+                  ripple 
                   v-for="(a,i) in furniture"
                   :key="i"
                   :class="{ 'left-border-yellow': a.houseId != 1 }"

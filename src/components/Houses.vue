@@ -22,7 +22,7 @@
           </template>
           <v-card>
             <v-card-title>
-              <span class="headline">User Profile</span>
+              <span class="headline">Add New House</span>
             </v-card-title>
             <v-card-text>
               <v-container grid-list-md>
@@ -110,6 +110,12 @@
     <!-- End new house snackbar -->
     
     <v-container grid-list-md text-xs-center fluid>
+      <div v-if="loader">
+        <v-progress-circular
+          indeterminate
+          color="#71eeb8"
+        ></v-progress-circular>
+      </div>
       <v-layout row v-for="h in houses" :key="h.id">
         <v-flex>
           <v-card light @click="getHouseById(h.id)" :class="{ 'displayNone': h.sold == 1 }">
@@ -145,7 +151,8 @@ export default {
       snackbar: false,
       snackbarColor: '',
       timeout: 3000,
-      snackbarText: ''
+      snackbarText: '',
+      loader: true
     }
   },
   computed: {
@@ -187,6 +194,7 @@ export default {
             data.splice(e, 1)
           }
         })
+        this.loader = false
         return this.houses = data
       })
     },

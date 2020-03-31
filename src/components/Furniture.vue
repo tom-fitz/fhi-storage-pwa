@@ -203,13 +203,22 @@
             </v-card-title>
           </v-card> -->
           <v-card>
-            <v-expansion-panel>
+            <v-expansion-panel 
+              multiple
+              v-model="panel"
+            >
               <!-- start category by Room panel -->
-              <v-expansion-panel-content>
+              <v-expansion-panel-content >
                 <template v-slot:header>
                   <h4>Categories By Room</h4>
                 </template>
                 <v-card>
+                  <div v-if="loader">
+                    <v-progress-circular
+                      indeterminate
+                      color="#71eeb8"
+                    ></v-progress-circular>
+                  </div>
                   <v-card-text
                       v-for="(c,i) in categoriesByGroupOne"
                       :key="i"
@@ -250,7 +259,7 @@
 let moment = require('moment')
 let getOrientedImage = require('exif-orientation-image')
 export default {
-  name: 'furniture',
+  name: 'furniture', 
   data () {
     return {
       furniture: [],
@@ -281,7 +290,9 @@ export default {
       width: null,
       height: null,
       isFurnitureSet: false,
-      quantity: 2
+      quantity: 2,
+      loader: true,
+      panel: [0,1]
     }
   },
   computed: {
@@ -313,6 +324,7 @@ export default {
         }
       })
       .then(data => {
+        this.loader = false
         return vm.categories = data
       })
     fetch(this.url + 'houses')

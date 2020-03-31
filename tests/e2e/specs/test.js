@@ -22,7 +22,7 @@ describe('Testing House Component', () => {
     
     cy.get('[data-cy=house-contract-date')
       .click()
-      .contains('31')
+      .contains('31') 
 
     // cy.get('[data-cy=house-contract-date')
     //   .invoke('val').then((text) => {
