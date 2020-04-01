@@ -9,7 +9,13 @@
     <v-container grid-list-md text-xs-center>
           <v-card light>
             <template>
-              <div v-if="furniture.length">
+              <div v-if="!noFurniture">
+                <div v-if="loader">
+                  <v-progress-circular
+                    indeterminate
+                    color="#71eeb8"
+                  ></v-progress-circular>
+                </div>
                 <v-expansion-panel>
                   <v-expansion-panel-content
                   ripple 
@@ -136,7 +142,9 @@ export default {
       width: '',
       height: '',
       quantity: 0,
-      totalStockQnty: 0
+      totalStockQnty: 0,
+      loader: true,
+      noFurniture: false
     }
   },
   computed: {
@@ -176,6 +184,10 @@ export default {
               this.totalStockQnty = e.quantity
             }
           })
+        if(data.length < 1 ){
+          this.noFurniture = true
+        }
+        this.loader = false
         return this.furniture = data
       })
     },

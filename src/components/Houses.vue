@@ -83,8 +83,8 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" flat @click="dialog = false">Close</v-btn>
-              <v-btn color="blue darken-1" flat @click="postNewHouse()">Save</v-btn>
+              <v-btn color="blue darken-1" flat @click="dialog = false" data-cy="house-close-btn">Close</v-btn>
+              <v-btn color="blue darken-1" flat @click="postNewHouse()" data-cy="house-save-btn">Save</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>

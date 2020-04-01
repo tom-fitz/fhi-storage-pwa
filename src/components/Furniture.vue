@@ -156,7 +156,7 @@
                   <v-flex xs12>
                     <v-text-field v-model="selectedTurns" label="Turns" type="number" required></v-text-field>
                   </v-flex>
-                  </v-flex>
+                  <v-flex>
                     <v-textarea
                       outlined
                       label="Notes"
@@ -203,51 +203,57 @@
             </v-card-title>
           </v-card> -->
           <v-card>
-            <v-expansion-panel 
-              multiple
+            <!-- <v-expansion-panels
               v-model="panel"
-            >
+              multiple
+            > -->
               <!-- start category by Room panel -->
-              <v-expansion-panel-content >
-                <template v-slot:header>
-                  <h4>Categories By Room</h4>
-                </template>
-                <v-card>
-                  <div v-if="loader">
-                    <v-progress-circular
-                      indeterminate
-                      color="#71eeb8"
-                    ></v-progress-circular>
-                  </div>
-                  <v-card-text
-                      v-for="(c,i) in categoriesByGroupOne"
-                      :key="i"
-                      class="paddingLeft"
-                      @click="getFurnitureByCategoryId(c.id, c.type)"
-                  >
-                    <h4>{{ c.type }}</h4>
-                  </v-card-text>
-                </v-card>
-              </v-expansion-panel-content>
+              <v-expansion-panel
+                v-model="panel"
+                expand
+              >
+                <v-expansion-panel-content >
+                  <template v-slot:header>
+                    <h4>Categories By Room</h4>
+                  </template>
+                  <v-card>
+                    <div v-if="loader">
+                      <v-progress-circular
+                        indeterminate
+                        color="#71eeb8"
+                      ></v-progress-circular>
+                    </div>
+                    <v-card-text
+                        v-for="(c,i) in categoriesByGroupOne"
+                        :key="i"
+                        class="paddingLeft"
+                        @click="getFurnitureByCategoryId(c.id, c.type)"
+                    >
+                      <h4>{{ c.type }}</h4>
+                    </v-card-text>
+                  </v-card>
+                </v-expansion-panel-content>
               <!-- End Category By Room panel -->
               <!-- start Misc Category panel -->
-              <v-expansion-panel-content>
-                <template v-slot:header>
-                  <h4>Misc Categories</h4>
-                </template>
-                <v-card>
-                  <v-card-text
-                      v-for="(c,i) in categoriesByGroupTwo"
-                      :key="i"
-                      class="paddingLeft"
-                      @click="getFurnitureByCategoryId(c.id, c.type)"
-                  >
-                    <h4>{{ c.type }}</h4>
-                  </v-card-text>
-                </v-card>
-              </v-expansion-panel-content>
+                <v-expansion-panel-content>
+                  <template v-slot:header>
+                    <h4>Misc Categories</h4>
+                  </template>
+                  <v-card>
+                    <v-card-text
+                        v-for="(c,i) in categoriesByGroupTwo"
+                        :key="i"
+                        class="paddingLeft"
+                        @click="getFurnitureByCategoryId(c.id, c.type)"
+                    >
+                      <h4>{{ c.type }}</h4>
+                    </v-card-text>
+                  </v-card>
+                </v-expansion-panel-content>
+              </v-expansion-panel>
               <!-- End Misc Categories -->
-            </v-expansion-panel>
+              
+            <!-- </v-expansion-panels> -->
           </v-card>
         </v-flex>
       </v-layout>
@@ -292,7 +298,7 @@ export default {
       isFurnitureSet: false,
       quantity: 2,
       loader: true,
-      panel: [0,1]
+      panel: [1, 2 ]
     }
   },
   computed: {
