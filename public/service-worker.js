@@ -8,21 +8,21 @@
 //   console.log(`Workbox didn't load`);
 // }
 
+self.addEventListener("message", msg => {
+  if(msg.data.action == 'skipWaiting'){
+    self.skipWaiting()
+  }
+})
+
 workbox.setConfig({
-  debug: false,
+  debug: true,
 })
 
 // Lets start by caching all .js files
-workbox.routing.networkFirst(
-  /\.js$/,
-  new networkFirst()
-)
-
-// then go ahead and cache any .vue files
-workbox.routing.networkFirst(
-  /\.vue$/,
-  new networkFirst()
-)
+// workbox.routing.networkFirst(
+//   /\.js$/,
+//   new networkFirst()
+// )
 
 workbox.precaching.precacheAndRoute([])
 
@@ -38,24 +38,22 @@ workbox.routing.registerRoute(
     ],
   }),
 )
+  
+workbox.routing.registerRoute(
+  new RegExp('https://fhistorage-api.azurewebsites.net'),
+  workbox.strategies.networkFirst({
+    cacheName: 'api',
+  }),
+)
 
-console.log("precaching")
-  
-  workbox.routing.registerRoute(
-    new RegExp('https://fhistorage-api.azurewebsites.net'),
-    workbox.strategies.networkFirst({
-      cacheName: 'api',
-    }),
-  )
-  
-  workbox.routing.registerRoute(
-    new RegExp('https://fonts.(?:googleapis|gstatic).com/(.*)'),
-    workbox.strategies.cacheFirst({
-      cacheName: 'googleapis',
-      plugins: [
-        new workbox.expiration.Plugin({
-          maxEntries: 30,
-        }),
-      ],
-    }),
-  )
+workbox.routing.registerRoute(
+  new RegExp('https://fonts.(?:googleapis|gstatic).com/(.*)'),
+  workbox.strategies.cacheFirst({
+    cacheName: 'googleapis',
+    plugins: [
+      new workbox.expiration.Plugin({
+        maxEntries: 30,
+      }),
+    ],
+  }),
+)
