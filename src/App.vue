@@ -1,14 +1,14 @@
 <template>
   <v-app>
     <v-content>
-      <nav class="navbar bg-light sticky-top">
+      <!-- <nav class="navbar bg-light sticky-top">
         <div
           class="btn btn-outline-success float-right"
           @click="installer()"
           :style="{'display': installBtn}">
         Install App
         </div>
-      </nav>
+      </nav> -->
       <!-- <Houses /> -->
       <!-- <div>
         <v-alert
