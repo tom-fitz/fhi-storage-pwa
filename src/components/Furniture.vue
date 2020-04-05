@@ -63,16 +63,17 @@
                       required
                     ></v-select>
                   </v-flex>
-                  <v-flex xs12 v-if="selectedCategory == '9'">
+                  <v-flex xs12>
                     <v-layout>
-                      <v-flex xs3>
+                      <v-flex xs4>
                         <v-text-field
                           v-model="width"
                           type="number"
-                          label="W"
+                          label="Dimensions"
+                          placeholder="W"
                         ></v-text-field>
                       </v-flex>
-                      <v-flex xs3>
+                      <v-flex xs4>
                         <v-text-field
                           v-model="height"
                           type="number"
@@ -80,8 +81,13 @@
                         ></v-text-field>
                       </v-flex>
                     </v-layout>
+                    <v-layout>
+                      <v-flex xs12>
+                        <span style="font-size:12px;color:rgba(0,0,0,.54)">* dimensions are in inches</span>
+                      </v-flex>
+                    </v-layout>
                   </v-flex>
-                  <v-flex xs12>
+                  <!-- <v-flex xs12>
                     <v-layout>
                       <v-flex xs4>
                         Is this a set?
@@ -93,8 +99,8 @@
                         </v-checkbox>
                       </v-flex>
                     </v-layout>
-                  </v-flex>
-                  <v-flex xs8 v-if="isFurnitureSet === true">
+                  </v-flex> -->
+                  <v-flex xs8>
                     <v-text-field 
                       v-model="quantity"
                       type="number"
@@ -217,7 +223,7 @@
                     <h4>Categories By Room</h4>
                   </template>
                   <v-card>
-                    <div v-if="loader">
+                    <div v-if="loader" style="text-align:center">
                       <v-progress-circular
                         indeterminate
                         color="#71eeb8"
@@ -240,6 +246,12 @@
                     <h4>Misc Categories</h4>
                   </template>
                   <v-card>
+                    <div v-if="loader" style="text-align:center">
+                      <v-progress-circular
+                        indeterminate
+                        color="#71eeb8"
+                      ></v-progress-circular>
+                    </div>
                     <v-card-text
                         v-for="(c,i) in categoriesByGroupTwo"
                         :key="i"
@@ -296,7 +308,7 @@ export default {
       width: null,
       height: null,
       isFurnitureSet: false,
-      quantity: 2,
+      quantity: 1,
       loader: true,
       panel: [1, 2 ]
     }
@@ -445,7 +457,6 @@ export default {
           this.snackbarColor = 'success'
           this.snackbarText = 'Furniture Successfully Posted'
           this.dialog = false
-          this.$router.push({name: 'houses'})
           let categoryName = ''
           this.categories.forEach(x => {
             if(x.id == data.categoryId){

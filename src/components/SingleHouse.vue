@@ -9,9 +9,13 @@
               <h2>{{ h.address }}</h2>
             </v-card-title>
             <v-card-text left>
-                <p><strong>Contract Date: </strong>{{ h.contractDate }}<br />
-                <strong>Cost of Home: </strong>${{ h.cost }}<br />
-                <strong>Zipcode: </strong>{{ h.zipcode }}</p>
+                <p>
+                  <strong>Contract Date: </strong>{{ h.contractDate }}<br />
+                  <strong>Contracted Price: </strong>{{ h.contractedPrice }}<br />
+                  <strong>Point of Contact: </strong>{{ h.pointOfContact }}<br />
+                  <strong>Town: </strong>{{ h.town }}<br />
+                  <strong>Notes: </strong>{{ h.notes }}
+                </p>
             </v-card-text>
           </v-card>
           <!-- Assoc. Furntiure card -->
@@ -43,11 +47,11 @@
                           <p>
                             <strong>Store: </strong>{{ a.purchasedFrom }}<br />
                             <strong>Date Purchased: </strong>{{ a.datePurchased }}<br />
-                            <strong>Cost: </strong>${{ a.cost }}<br />
+                            <strong>Cost: </strong>{{ a.cost }}<br />
                             <strong>Turns: </strong>{{ a.turns }}<br />
+                            <strong>Dimensions: </strong>{{ a.width }} X {{ a.height }}<br />
+                            <strong>Quantity: </strong>{{ a.quantity }}<br />
                             <strong>Notes: </strong>{{ a.notes }}<br />
-                            <span :class="{'displayNone' : a.width == null || a.height == null}"><strong>Dimensions: </strong>{{ a.width }} X {{ a.height }}<br /></span>
-                            <span :class="{'displayNone' : a.isFurnitureSet == false}"><strong>Quantity: </strong>{{ a.quantity }}</span>
                           </p>
                       </v-card-text>
                       <v-card-actions>
@@ -188,32 +192,6 @@ export default {
     },
     editHouse (houseId) {
       this.$router.push({name: 'houseEdit', params: { houseId: houseId }})
-    },
-    postNewHouse(){
-      (async () => {
-        const response = await fetch(this.url + 'houses/'+ this.houseId, {
-          method: 'PUT',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            "houseId" : this.houseId,
-            "address" : this.newAddressInput,
-            "zipcode" : +this.newZipInput,
-            "cost" : +this.newCostInput,
-            "contractDate" : this.newContractDate,
-            "dateSold" : this.dateSold,
-            "sold" : this.sold
-          })
-        });
-        const data = await response.json()
-        this.snackbar = true
-        this.snackbarColor = 'success'
-        this.snackbarText = 'House Successfully Updated'
-        this.dialog = false
-        this.getHouseByHouseId(this.houseId)
-      })();
     },
     updateFurniture(f){
       if(f.isFurnitureSet)

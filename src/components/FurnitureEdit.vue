@@ -56,7 +56,7 @@
                 required
               ></v-select>
             </v-flex>
-            <v-flex xs12 v-if="x.categoryId == '9'">
+            <v-flex xs12>
               <v-layout>
                 <v-flex xs3>
                   <v-text-field
@@ -71,6 +71,11 @@
                     type="number"
                     label="H"
                   ></v-text-field>
+                </v-flex>
+              </v-layout>
+              <v-layout>
+                <v-flex xs12>
+                  <span style="font-size:12px;color:rgba(0,0,0,.54)">* dimensions are in inches</span>
                 </v-flex>
               </v-layout>
             </v-flex>

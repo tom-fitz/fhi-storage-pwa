@@ -37,20 +37,26 @@
                   </v-flex>
                   <v-flex xs12>
                     <v-text-field
-                      label="Zipcode"
-                      v-model="zipInput"
-                      type="number"
+                      label="Town"
+                      v-model="townInput"
                       required
-                      data-cy="house-zipcode"
+                      data-cy="house-townInput"
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs12>
                     <v-text-field 
-                      label="Cost"
-                      v-model="costInput"
+                      label="Contracted Price"
+                      v-model="contractPriceInput"
                       type="number" 
                       hint="ex: 122.75"
-                      data-cy="house-cost"
+                      data-cy="house-contractedPrice"
+                    ></v-text-field>
+                  </v-flex>
+                  <v-flex xs12>
+                    <v-text-field 
+                      label="Point of Contact"
+                      v-model="pocInput"
+                      data-cy="house-poc"
                     ></v-text-field>
                   </v-flex>
                   <!-- contract date picker -->
@@ -78,6 +84,13 @@
                     </v-menu>
                   </v-flex>
                   <!-- end contract date picker -->
+                  <v-flex xs12>
+                    <v-text-field 
+                      label="Notes"
+                      v-model="notesInput"
+                      data-cy="house-notes"
+                    ></v-text-field>
+                  </v-flex>
                 </v-layout>
               </v-container>
             </v-card-text>
@@ -143,8 +156,10 @@ export default {
       dialog: false,
       sold: false,
       addressInput: '',
-      zipInput: '',
-      costInput: '',
+      townInput: '',
+      contractPriceInput: '',
+      notesInput: '',
+      pocInput: '',
       contractedDate: new Date().toISOString().substr(0, 10),
       menu1: false,
       contractedDays: '',
@@ -260,11 +275,13 @@ export default {
           },
           body: JSON.stringify({
             "address" : this.addressInput,
-            "zipcode" : +this.zipInput,
-            "cost" : +this.costInput,
+            "town" : +this.townInput,
+            "cost" : +this.contractedPriceInput,
             "contractDate" : this.contractedDate,
             "dateSold" : this.sDate,
-            "sold" : this.sold
+            "sold" : this.sold,
+            "notes" : this.notesInput,
+            "pointOfContact" : this.pocInput
           })
         });
         const data = await response.json()

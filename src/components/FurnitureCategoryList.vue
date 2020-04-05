@@ -41,14 +41,14 @@
                             <strong>Date Purchased: </strong>{{ a.datePurchased }}<br />
                             <strong>Cost: </strong>${{ a.cost }}<br />
                             <strong>Turns: </strong>{{ a.turns }}<br />
-                            <span :class="{ 'displayNone' :a.width == null || a.height == null }"><strong>Dimensions: </strong>{{ a.width }} X {{ a.height }}<br /></span>
-                            <span v-if="a.isFurnitureSet"><strong>Quantity: </strong>{{ a.quantity }}</span><br />
+                            <strong>Dimensions: </strong>{{ a.width }} X {{ a.height }}<br />
+                            <strong>Quantity: </strong>{{ a.quantity }}<br />
                             <strong>Notes: </strong>{{ a.notes }}
                           </p>
                       </v-card-text>
                       <v-card-text class="leftRightPadding">
                         <v-select
-                          :class="{ 'displayNone': a.houseId != 1 }"
+                          :class="{ 'displayNone': a.houseId != 1 && a.sold != true }"
                           :items="houses"
                           v-model="selectedHouse"
                           item-text="address"
@@ -57,7 +57,7 @@
                           label="Select House"
                           required
                         ></v-select>
-                        <v-flex xs8 v-if="selectedHouse != '' && a.isFurnitureSet == true">
+                        <v-flex xs8 v-if="selectedHouse != '' && a.isFurnitureSet">
                           <v-text-field 
                             v-model="quantity"
                             type="number"
@@ -80,10 +80,10 @@
                             color="orange"
                             dark
                           >Edit</v-btn>
-                          <v-btn @click="deleteFurniture(a.furnitureId)"
-                                 color="red"
-                                 dark
-                                 :class="{'displayNone' : a.isFurnitureSet == true}"
+                          <v-btn 
+                              @click="deleteFurniture(a.furnitureId)"
+                              color="red"
+                              dark
                           >Delete<v-icon>close</v-icon>
                           </v-btn>
                         </v-card-actions>
@@ -141,7 +141,7 @@ export default {
       snackbarText: '',
       width: '',
       height: '',
-      quantity: 0,
+      quantity: 1,
       totalStockQnty: 0,
       loader: true,
       noFurniture: false
@@ -203,7 +203,7 @@ export default {
     },
     assignSingleFurnitureToHouse(furniture){
       (async () => {
-        const response = await fetch(this.url + '/furniture/'+ furniture.furnitureId, {
+        const response = await fetch(this.url + 'furniture/'+ furniture.furnitureId, {
           method: 'PUT',
           headers: {
             'Accept': 'application/json',
@@ -222,7 +222,8 @@ export default {
             "uid" : furniture.uid,
             "width" : this.width,
             "height" : this.height,
-            "quantity" : this.quantity
+            "quantity" : this.quantity,
+            "notes" : this.notes
           })
         });
         const data = await response.json()
@@ -291,13 +292,18 @@ export default {
             'Content-Type': 'application/json'
           }
         })
-        .then(res => {})
+        .then(res => {
+          this.snackbar = true
+          this.snackbarColor = 'success'
+          this.snackbarText = 'Furniture Successfully Deleted'
+        })
         .catch(err => {
           console.log("delete error: ", err)
+          this.snackbar = true
+          this.snackbarColor = 'error'
+          this.snackbarText = 'Error Deleting Furniture. Call Tom'
         })
-        this.snackbar = true
-        this.snackbarColor = 'success'
-        this.snackbarText = 'Furniture Successfully Deleted'
+        
         this.getFurnitureByCategoryId(this.catId)
       })();
       

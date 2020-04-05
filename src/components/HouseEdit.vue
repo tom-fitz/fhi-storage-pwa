@@ -17,18 +17,24 @@
                 </v-flex>
                 <v-flex xs12>
                     <v-text-field
-                    label="Zipcode"
-                    v-model="x.zipcode"
-                    type="number"
+                    label="Town"
+                    v-model="x.town"
                     required
                     ></v-text-field>
                 </v-flex>
                 <v-flex xs12>
                     <v-text-field 
-                    label="Cost"
-                    v-model="x.cost"
+                    label="Contracted Price"
+                    v-model="x.contractedPrice"
                     type="number" 
                     hint="ex: 122.75"
+                    ></v-text-field>
+                </v-flex>
+                <v-flex xs12>
+                    <v-text-field
+                    label="Point of Contact"
+                    v-model="x.pointOfContact"
+                    required
                     ></v-text-field>
                 </v-flex>
                 <v-flex xs12>
@@ -39,7 +45,13 @@
                     readonly
                     ></v-text-field>
                 </v-flex>
-
+                <v-flex xs12>
+                    <v-text-field
+                    label="Notes"
+                    v-model="x.notes"
+                    required
+                    ></v-text-field>
+                </v-flex>
                 <v-flex xs12>
                     <v-checkbox
                     v-model="sold"
@@ -97,7 +109,6 @@
             </v-card-text>
         </v-card>
         <v-spacer></v-spacer>
-        </v-dialog>
     </v-container>
     <!-- End edit house modal -->
 </template>
@@ -186,10 +197,13 @@ export default {
                         "houseId" : this.houseId,
                         "address" : this.singleHouse[0].address,
                         "zipcode" : this.singleHouse[0].zipcode,
-                        "cost" : this.singleHouse[0].cost,
+                        "contractedPrice" : this.singleHouse[0].contractedPrice,
                         "contractDate" : this.singleHouse[0].contractDate,
                         "dateSold" : this.dateSold,
-                        "sold" : this.sold
+                        "sold" : this.sold,
+                        "notes" : this.singleHouse[0].notes,
+                        "pointOfContact" : this.singleHouse[0].pointOfContact,
+                        "town" : this.singleHouse[0].town
                     })
                 });
                 const data = await response.json()
