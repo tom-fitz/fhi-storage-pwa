@@ -87,19 +87,6 @@
                       </v-flex>
                     </v-layout>
                   </v-flex>
-                  <!-- <v-flex xs12>
-                    <v-layout>
-                      <v-flex xs4>
-                        Is this a set?
-                      </v-flex>
-                      <v-flex xs3>
-                        <v-checkbox
-                          v-model="isFurnitureSet"
-                        >
-                        </v-checkbox>
-                      </v-flex>
-                    </v-layout>
-                  </v-flex> -->
                   <v-flex xs8>
                     <v-text-field 
                       v-model="quantity"
@@ -209,10 +196,6 @@
             </v-card-title>
           </v-card> -->
           <v-card>
-            <!-- <v-expansion-panels
-              v-model="panel"
-              multiple
-            > -->
               <!-- start category by Room panel -->
               <v-expansion-panel
                 v-model="panel"
