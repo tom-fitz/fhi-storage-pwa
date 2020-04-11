@@ -421,6 +421,8 @@ export default {
           uid += charset.charAt(Math.floor(Math.random() * charset.length))
         }
 
+        if(this.quantity > 1){this.isFurnitureSet = true}
+
         // Post Furniture first and pass newly created ID to the image POST.
         (async () => {
           const response = await fetch(this.url + 'furniture', {

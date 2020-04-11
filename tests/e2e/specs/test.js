@@ -16,7 +16,7 @@ describe('Testing House Component', () => {
     
     cy.get('[data-cy=house-townInput]')
       .type('Needham')
-      .should('have.value', 'Needham')
+      .should('have.value', 'Needham').click
     
     cy.get('[data-cy=house-contractedPrice]')
       .type('54321')
