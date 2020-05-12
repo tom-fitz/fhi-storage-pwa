@@ -63,17 +63,22 @@
               </template>
           </v-card>
           <v-card>
-            <!-- Modal for editing a new house -->
-            <v-layout row justify-center>
-              <v-btn 
-              class="btn-style"
-              x-large
-              @click="editHouse(h.id)"
-              color="orange"
-              dark
-              >Edit</v-btn>
-            </v-layout>
-          <!-- End edit house modal -->
+          <!-- Upload and edit buttons -->
+            <v-card-text>
+              <v-card-actions>
+                <v-btn 
+                @click="bulkUploadFurniture(h.id)"
+                color="yellow"
+                light
+                >Bulk Upload Furniture</v-btn>
+                <v-btn 
+                @click="editHouse(h.id)"
+                color="orange"
+                dark
+                >Edit</v-btn>
+              </v-card-actions>
+            </v-card-text>
+          <!-- End edit and upload house modal -->
             <!-- Start snackbar -->
               <v-snackbar
                 v-model="snackbar"
@@ -192,6 +197,9 @@ export default {
     },
     editHouse (houseId) {
       this.$router.push({name: 'houseEdit', params: { houseId: houseId }})
+    },
+    bulkUploadFurniture(houseId) {
+      this.$router.push({name: 'bulkFurnitureUpload', pararms: { houseId: houseId }})
     },
     updateFurniture(f){
       if(f.isFurnitureSet)

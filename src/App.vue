@@ -50,6 +50,7 @@ import SingleHouse from './components/SingleHouse'
 import FurnitureCategoryList from './components/FurnitureCategoryList'
 import HouseEdit from './components/HouseEdit'
 import FurnitureEdit from './components/FurnitureEdit'
+import BulkFurnitureUpload from './components/BulkFurnitureUpload'
 
 export default {
   name: 'App',
@@ -61,7 +62,8 @@ export default {
     SingleHouse,
     FurnitureCategoryList,
     HouseEdit,
-    FurnitureEdit
+    FurnitureEdit,
+    BulkFurnitureUpload
   },
   data () {
     return {

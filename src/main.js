@@ -10,6 +10,7 @@ import SingleHouse from './components/SingleHouse'
 import FurnitureCategoryList from './components/FurnitureCategoryList'
 import FurnitureEdit from './components/FurnitureEdit'
 import HouseEdit from './components/HouseEdit'
+import BulkFurnitureUpload from './components/BulkFurnitureUpload'
 import moment from '../node_modules/moment'
 import './registerServiceWorker'
 
@@ -25,7 +26,8 @@ const routes = [
   {path: '/furniture', name: 'furniture', component: Furniture},
   {path: '/furniture/category/:id/:name', name: 'furnitureCategoryList', component: FurnitureCategoryList},
   {path: '/furniture/:furnitureId', name: 'furnitureEdit', component: FurnitureEdit},
-  {path: '/house/edit/:id', name: 'houseEdit', component: HouseEdit}
+  {path: '/house/edit/:id', name: 'houseEdit', component: HouseEdit},
+  {path: '/furniture/bulkUpload/:id', name: 'bulkFurnitureUpload', component: BulkFurnitureUpload}
 ]
 
 const router = new VueRouter({
