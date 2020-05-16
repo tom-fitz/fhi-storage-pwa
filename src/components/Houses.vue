@@ -91,6 +91,14 @@
                       data-cy="house-notes"
                     ></v-text-field>
                   </v-flex>
+                  <!-- <v-flex xs12>
+                    <v-select
+                      :items="testSelectList"
+                      label="Test Drop down"
+                      outlined
+                      data-test="test-select-list"
+                    ></v-select>
+                  </v-flex> -->
                 </v-layout>
               </v-container>
             </v-card-text>
@@ -167,7 +175,8 @@ export default {
       snackbarColor: '',
       timeout: 3000,
       snackbarText: '',
-      loader: true
+      loader: true,
+      testSelectList: ["one","two","three"]
     }
   },
   computed: {

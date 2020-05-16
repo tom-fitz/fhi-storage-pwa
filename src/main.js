@@ -13,8 +13,11 @@ import HouseEdit from './components/HouseEdit'
 import BulkFurnitureUpload from './components/BulkFurnitureUpload'
 import moment from '../node_modules/moment'
 import './registerServiceWorker'
+import axios from 'axios'
 
 Vue.config.productionTip = false
+
+Vue.prototype.$http = axios
 
 Vue.prototype.moment = moment
 

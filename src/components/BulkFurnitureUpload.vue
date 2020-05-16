@@ -12,7 +12,7 @@
                 <p>These placeholders <strong>NEED</strong> to be edited. You <strong>will not</strong> be able to move furniture back to the warehouse without editing in the proper information.</p>
             </v-card-text>
             <v-card-text>
-                <input type="file" multiple accept="image/*" @change="handleSelects" name="images">
+                <input type="file" ref="file" multiple accept="image/*" @change="handleSelects" name="images">
             </v-card-text>
         </v-card>
         <v-spacer></v-spacer>
@@ -54,8 +54,9 @@ export default {
     },
     methods: {
         handleSelects(e) {
-            this.images = [];
+            this.images = []
             let fileList = Array.prototype.slice.call(e.target.files);
+
             fileList.forEach(f => {
 
                 if(!f.type.match("image.*")) {
@@ -63,24 +64,37 @@ export default {
                     }
                             
                 let reader = new FileReader();
-                let that = this;
+                let vm = this;
                 reader.onload = function (e) {
-                that.images.push(e.target.result);
+                vm.images.push(e.target.result);
 
                 }
                 reader.readAsDataURL(f); 
             });
         },
         uploadFiles(){
-            // First, we need to build the furnitureObject with dummy data..
-            this.buildfurnitureArray()
-            // Next, we need to build out the formData and add in the newly created furnitureId's
-            let formData = this.buildFormData()
+            let formData = new FormData()
 
-            let request = new XMLHttpRequest()
+            for(var i=0;i<this.$refs.file.files.length;i++){
+                let file = this.$refs.file.files[i]
+                console.log(file)
+                formData.append('files[' + i + ']', file)
+                formData.append('furnitureId', 12345)
+            }
             let imgUrl = 'http://localhost:50850/api/image/bulk'
-            request.open('POST', imgUrl)
-            request.send(formData)
+            this.$http.post( imgUrl,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                }
+            ).then(function(response){
+                console.log("data: ", response.data)
+            })
+            .catch(function(err){
+                console.log("error: ", err)
+            });
 
         },
         buildfurnitureArray(){
@@ -105,15 +119,13 @@ export default {
                 })
             }
         },
-        buildFormData(){
-            let formData = new FormData()
-            this.images.forEach(e => {
-                formData.append('image', e)
-                formData.append('furnitureId', 11111)
-            })
-
-            return formData 
-        },
+        // buildFormData(){
+        //     let formData = new FormData()
+        //     this.images.forEach((e, i) => {
+        //         formData.append(`image[${i}]`, e)
+        //         formData.append('furnitureId', 11111)
+        //     })
+        // },
         uidGenerator(){
             let uid = ''
             let charset = 'abcdefghijklmnopqrstuvwxyz0123456789'

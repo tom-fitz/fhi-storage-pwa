@@ -26,6 +26,21 @@ describe('Testing House Component', () => {
       .type('Thomas')
       .should('have.value','Thomas')
 
+    // cy.get('[data-test=test-select-list]')
+    //   //'one' is the expected select-list value
+    //   .type('one{enter}', {force: true})
+    //   //this next get is specifically pointing at the div
+    //   //that vuetify puts the selected element into
+    //   .get('.v-select__selection--comma')
+    //       .then(function($elem) {
+    //         // cy.log is a super useful debugging tool, use it
+    //         // is showed me the exact string I was expecting
+    //         cy.log($elem.text())
+    //       //then you can assert the selected value
+    //       expect($elem.text())
+    //         .equal('one')
+    //   })
+
     cy.get('[data-cy=house-close-btn]')
       .click()
 
