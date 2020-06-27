@@ -57,8 +57,8 @@ export default {
             furnitureIds: [],
             imagesLength: 0,
             loader: false,
-            // url: 'https://fhistorage-api.azurewebsites.net/api/houses/'
-            url: 'http://localhost:50850/api/furniture/bulk'
+            url: 'https://fhistorage-api.azurewebsites.net/api/furniture/bulk',
+            imageUrl: 'https://fhistorage-api.azurewebsites.net/api/image/bulk'
         }
     },
     computed: {
@@ -68,9 +68,6 @@ export default {
         computedSoldDate () {
             return this.dateSold ? moment(this.dateSold).format('MM/DD/YYYY') : ''
         },
-    },
-    created () {
-        //this.getHouseByHouseId(this.houseId)
     },
     methods: {
         handleSelects(e) {
@@ -119,9 +116,6 @@ export default {
             })();
         },
         uploadBulkImages(){
-            //send images
-            this.url = 'http://localhost:50850/api/image/bulk'
-
             let formData = new FormData()
 
             for(var i=0;i<this.imagesLength;i++){
@@ -130,12 +124,8 @@ export default {
                 formData.append('FurnitureId', this.furnitureIds[i])
             }
 
-            formData.forEach((x) => {
-                console.log("form data;", x)
-            })
-
             let request = new XMLHttpRequest()
-            request.open('POST', this.url)
+            request.open('POST', this.imageUrl)
             request.send(formData)
         },
     }
