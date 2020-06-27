@@ -17,12 +17,28 @@
         </v-card>
         <v-spacer></v-spacer>
         <v-card>
-            <v-card-text v-for="(image, i) in images" :key="i">
-                <img :src="image" class="preview">
-            </v-card-text>
-            <v-card-text v-if="images.length > 0">
-                <v-btn color="orange" x-large light @click="uploadFiles()">Save</v-btn>
-            </v-card-text>
+            <div v-if="loader" style="text-align:center">
+                <v-progress-circular
+                indeterminate
+                color="#71eeb8"
+                ></v-progress-circular>
+            </div>
+            <div v-if="!loader" style="text-align:center">
+                <v-card-text v-for="(image, i) in images" :key="i">
+                    <img :src="image" class="preview">
+                </v-card-text>
+                <v-card-text v-if="images.length > 0">
+                    <v-btn 
+                        color="orange" 
+                        x-large 
+                        light
+                        @click="uploadFiles()"
+                        :loading="loader"
+                    >
+                        Save
+                    </v-btn>
+                </v-card-text>
+            </div>
         </v-card>
         <v-spacer></v-spacer>
     </v-container>
@@ -38,7 +54,11 @@ export default {
             houseId: this.$route.params.id,
             images: [],
             furnitureArray: [],
-            url: 'https://fhistorage-api.azurewebsites.net/api/houses/'
+            furnitureIds: [],
+            imagesLength: 0,
+            loader: false,
+            // url: 'https://fhistorage-api.azurewebsites.net/api/houses/'
+            url: 'http://localhost:50850/api/furniture/bulk'
         }
     },
     computed: {
@@ -47,7 +67,7 @@ export default {
         },
         computedSoldDate () {
             return this.dateSold ? moment(this.dateSold).format('MM/DD/YYYY') : ''
-        }
+        },
     },
     created () {
         //this.getHouseByHouseId(this.houseId)
@@ -71,142 +91,53 @@ export default {
                 }
                 reader.readAsDataURL(f); 
             });
+            this.imagesLength = this.$refs.file.files.length
         },
         uploadFiles(){
+            (async () => {
+                this.loader = true
+                const response = await fetch(this.url + '/' + this.imagesLength + '/' + this.houseId, {
+                    method: 'POST',
+                    headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+                const data = await response.json()
+                
+                data.forEach((e) => {
+                    this.furnitureIds.push(e.furnitureId)
+                })
+
+                this.uploadBulkImages()
+
+                this.loader = false
+
+                this.$router.push({name: 'singleHouse', params: { id: this.houseId }})
+
+            })();
+        },
+        uploadBulkImages(){
+            //send images
+            this.url = 'http://localhost:50850/api/image/bulk'
+
             let formData = new FormData()
 
-            for(var i=0;i<this.$refs.file.files.length;i++){
+            for(var i=0;i<this.imagesLength;i++){
                 let file = this.$refs.file.files[i]
-                console.log(file)
-                formData.append('files[' + i + ']', file)
-                formData.append('furnitureId', 12345)
+                formData.append('Image', file)
+                formData.append('FurnitureId', this.furnitureIds[i])
             }
-            let imgUrl = 'http://localhost:50850/api/image/bulk'
-            this.$http.post( imgUrl,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    },
-                }
-            ).then(function(response){
-                console.log("data: ", response.data)
+
+            formData.forEach((x) => {
+                console.log("form data;", x)
             })
-            .catch(function(err){
-                console.log("error: ", err)
-            });
 
+            let request = new XMLHttpRequest()
+            request.open('POST', this.url)
+            request.send(formData)
         },
-        buildfurnitureArray(){
-            // now set the loop to the finish on the length of your images
-            // this will be the furniture 'shell' for each image
-            for(let i = 0; i < this.images.length; i++){
-                this.furnitureArray.push({
-                    "name": "**BULK-UPLOAD**",
-                    "uid": this.uidGenerator(),
-                    "categoryId": 1,
-                    "cost": 0,
-                    "purchasedFrom": "**BULK-UPLOAD**",
-                    "datePurchased": Date.now(),
-                    "houseId": this.houseId,
-                    "turns": 1,
-                    "width": null,
-                    "height": null,
-                    "isFurnitureSet" : false,
-                    "quantity" : 1,
-                    "notes" : "**BULK-UPLOAD**",
-                    "furnitureImageId":null
-                })
-            }
-        },
-        // buildFormData(){
-        //     let formData = new FormData()
-        //     this.images.forEach((e, i) => {
-        //         formData.append(`image[${i}]`, e)
-        //         formData.append('furnitureId', 11111)
-        //     })
-        // },
-        uidGenerator(){
-            let uid = ''
-            let charset = 'abcdefghijklmnopqrstuvwxyz0123456789'
-
-            for(var x=0;x<4;x++){
-            uid += charset.charAt(Math.floor(Math.random() * charset.length))
-            }
-
-            return uid.toUpperCase()
-        }
-        // getHouseByHouseId(houseId){
-        //     // Fetch single house by house id
-        //     let houseIdUrl = this.url + this.houseId
-        //     fetch(houseIdUrl)
-        //     .then(response => {
-        //         if(response.ok) {
-        //         return response.json()
-        //         }
-        //     })
-        //     .then(house => {
-        //         house.forEach(h => {
-        //             this.contractDate = moment(h.contractDate).format('MM/DD/YYYY')
-        //             if(h.dateSold = '0001-01-01'){
-        //                 this.dateSold = ''
-        //             }else{
-        //                 this.dateSold = moment(h.dateSold).format('MM/DD/YYYY')
-        //             }
-        //         })
-        //         return this.singleHouse = house
-        //     })
-        // },
-        // deleteHouse (houseId) {
-        //     (async () => {
-        //         const response = await fetch(this.url + this.houseId, {
-        //         method: 'DELETE'
-        //         })
-        //         .then(res => {
-
-        //         })
-        //         .catch(err => {
-        //             this.snackbar = true
-        //             this.snackbarColor = 'danger'
-        //             this.snackbarText = 'House Deletion Failed. Retry.'
-        //         })
-        //         this.snackbar = true
-        //         this.snackbarColor = 'success'
-        //         this.snackbarText = 'House Successfully Deleted'
-        //         this.$router.push('/')
-        //     })();
-        // },
-        // editHouse () {
-        //     (async () => {
-        //         const response = await fetch(this.url + this.houseId, {
-        //             method: 'PUT',
-        //             headers: {
-        //                 'Accept' : 'application/json',
-        //                 'Content-Type' : 'application/json'
-        //             },
-        //             body: JSON.stringify({
-        //                 "houseId" : this.houseId,
-        //                 "address" : this.singleHouse[0].address,
-        //                 "zipcode" : this.singleHouse[0].zipcode,
-        //                 "contractedPrice" : this.singleHouse[0].contractedPrice,
-        //                 "contractDate" : this.singleHouse[0].contractDate,
-        //                 "dateSold" : this.dateSold,
-        //                 "sold" : this.sold,
-        //                 "notes" : this.singleHouse[0].notes,
-        //                 "pointOfContact" : this.singleHouse[0].pointOfContact,
-        //                 "town" : this.singleHouse[0].town
-        //             })
-        //         });
-        //         const data = await response.json()
-        //         this.snackbar = true
-        //         this.snackbarColor = 'success'
-        //         this.snackbarText = 'House Successfully Edited'
-        //         this.$router.push('/')
-        //     })();
-        // },
-        // cancelEdit () {
-        //     this.$router.push({name: 'singleHouse', params: {houseId: this.houseId }})
-        // }
     }
 }
 </script>

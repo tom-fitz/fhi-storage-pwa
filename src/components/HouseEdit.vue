@@ -57,6 +57,7 @@
                     v-model="sold"
                     label="Sold"
                     input-value="false"
+                    :disabled="soldFlag == 0"
                     ></v-checkbox>
                 </v-flex>
 
@@ -94,6 +95,7 @@
                 @click="editHouse()"
                 color="yellow"
                 light
+                :disabled="soldFlag == 0"
                 >Save</v-btn>
                 <v-btn 
                 @click="cancelEdit()"
@@ -103,6 +105,7 @@
                 <v-btn @click="deleteHouse()"
                         color="red"
                         dark
+                        :disabled="soldFlag == 0"
                 >Delete<v-icon>close</v-icon>
                 </v-btn>
             </v-card-actions>
@@ -126,7 +129,7 @@ export default {
             addressInput: '',
             zipInput: '',
             costInput: '',
-            soldFlag: false,
+            soldFlag: this.$route.params.soldFlag,
             contractDate: '',
             dateSold: '',
             sold: false,
