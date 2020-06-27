@@ -32,6 +32,7 @@
                   v-for="(a,i) in assocFurniture"
                   :key="i"
                   multiple
+                  :class="{ 'border-red': a.bulk != 0 }"
                   >
                   <template v-slot:header>
                       <h3>{{ a.name }} | {{ a.uid }}</h3>
@@ -55,7 +56,17 @@
                           </p>
                       </v-card-text>
                       <v-card-actions>
-                        <v-btn flat color="orange" @click="updateFurniture(a)">Send Back to Warehouse</v-btn>
+                        <v-btn 
+                          v-if="!a.bulk"
+                          light
+                          color="yellow" 
+                          @click="updateFurniture(a)"
+                        >Return to Warehouse</v-btn>
+                        <v-btn
+                          color="orange"
+                          dark
+                          @click="routeToFurnitureEdit(a.furnitureId)"
+                        >Edit Furniture</v-btn>
                       </v-card-actions>
                   </v-card>
                   </v-expansion-panel-content>
@@ -108,6 +119,7 @@
 <script>
 let moment = require('moment')
 let orient = require('jpeg-autorotate')
+const FURNITURE_NAME_BULK_UPLOAD = "***Bulk-Upload***"
 export default {
   name: 'singleHouse',
   data () {
@@ -118,7 +130,6 @@ export default {
       houseId: this.$route.params.id,
       dialog: false,
       newSoldDate: new Date().toISOString().substr(0, 10),
-      // newSoldDate: '',
       sold: false,
       menu1: false,
       menu2: false,
@@ -126,7 +137,7 @@ export default {
       snackbarColor: '',
       timeout: 3000,
       snackbarText: '',
-      loader: true
+      loader: true,
     }
   },
   computed: {
@@ -169,10 +180,15 @@ export default {
         }
       })
       .then(furniture => {
+        this.loader = false
         furniture.forEach(e => {
           e.datePurchased = moment(e.datePurchased).format('MM/DD/YYYY')
+          if(e.name == FURNITURE_NAME_BULK_UPLOAD){
+            Object.assign(e, {bulk: 1})
+          }else{
+            Object.assign(e, {bulk: 0})
+          }
         })
-        this.loader = false
         return this.assocFurniture = furniture
       })
     },
@@ -196,7 +212,13 @@ export default {
       })();
     },
     editHouse (houseId) {
-      this.$router.push({name: 'houseEdit', params: { houseId: houseId }})
+      let soldFlag = true
+      this.assocFurniture.forEach(x => {
+        if(x.bulk){
+          soldFlag = false
+        }
+      })
+      this.$router.push({name: 'houseEdit', params: { houseId: houseId, soldFlag: soldFlag }})
     },
     bulkUploadFurniture(houseId) {
       this.$router.push({name: 'bulkFurnitureUpload', pararms: { houseId: houseId }})
@@ -272,6 +294,9 @@ export default {
         this.dialog = false
         this.getHouseByHouseId(furn.houseId)
       })();
+    },
+    routeToFurnitureEdit(furnId){
+      this.$router.push({name: 'furnitureEdit', params: { furnitureId: furnId }})
     }
   }
 }
@@ -288,6 +313,9 @@ p {
 .btn-style {
   width:80%;
   margin: 15px 0px;
+}
+.border-red {
+  border-left: solid 4px red !important
 }
 /* h1, h2 {
   font-weight: normal;

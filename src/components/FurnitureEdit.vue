@@ -156,6 +156,24 @@
         <v-btn color="blue darken-1" flat @click="closeEditFurniture(x.categoryId)">Close</v-btn>
         <v-btn color="blue darken-1" flat @click="editFurniture(x)">Save</v-btn>
       </v-card-actions>
+      <!-- Start snackbar -->
+      <v-snackbar
+        v-model="snackbar"
+        :color="snackbarColor"
+        :timeout="timeout"
+      >
+        {{ snackbarText }}
+        <v-btn
+          dark
+          flat
+          @click="snackbar = false"
+        >
+          <v-icon>
+            close
+          </v-icon>
+        </v-btn>
+      </v-snackbar>
+    <!-- End snackbar -->
     </v-card>
   </v-container>
 </template>
@@ -180,7 +198,11 @@ export default {
       image: '',
       selectedHouse: '',
       selectedCategory: '',
-      quantity: 0
+      quantity: 0,
+      snackbar: false,
+      snackbarColor: '',
+      timeout: 5000,
+      snackbarText: '',
     }
   },
   computed: {
@@ -264,8 +286,24 @@ export default {
           }
         })
       }
-      this.editFurnitureAsync(furnObj.furnitureId)
-      
+      this.furniture.forEach(x => {
+        if(x.name != "***Bulk-Upload***" ||
+           x.purchasedFrom != "***Bulk-Upload***" ||
+           x.notes != "***Bulk-Upload***" ||
+           x.width != null ||
+           x.height != null ||
+           x.cost > 0 ){
+             x.bulk = false
+             this.editFurnitureAsync(furnObj.furnitureId)
+           } else {
+              if(x.bulk = 1){
+                this.snackbar = true
+                this.snackbarColor = 'danger'
+                this.snackbarText = 'Error: Make sure ALL bulk uploaded furniture values all get edited.'
+                return;
+              }
+           }
+      })
     },
     editFurnitureAsync(furnId){
       (async () => {
@@ -284,7 +322,11 @@ export default {
             categoryName = c.type
           }
         })
-        this.$router.push({name: 'furnitureCategoryList', params: { id: this.furniture[0].categoryId, name: categoryName }})
+        if(this.furniture[0].houseId != 1){
+          this.$router.push({name: 'singleHouse', params: { id: this.furniture[0].houseId }})
+        }else{
+          this.$router.push({name: 'furnitureCategoryList', params: { id: this.furniture[0].categoryId, name: categoryName }})
+        }
       })();
     },
     updateImage(furnId){

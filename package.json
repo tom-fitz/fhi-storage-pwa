@@ -10,6 +10,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "axios": "^0.19.2",
     "core-js": "^2.6.5",
     "exif-orientation-image": "^1.0.1",
     "jpeg-autorotate": "^5.0.1",
